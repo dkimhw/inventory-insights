@@ -1,0 +1,6 @@
+
+0 0 * * 1 /usr/local/bin/python3 /Users/davidkim/Documents/python_projects/dealership_competitor_dash/get_inventory_data.py
+
+
+
+* * * * * /Users/davidkim/opt/anaconda3/bin/python /Users/davidkim/Documents/python_projects/dealership_competitor_dash/test_cron.py
