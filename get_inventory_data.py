@@ -53,6 +53,24 @@ dealerships = {
         'zipcode': '01746',
         'city': 'Holliston',
         'state': 'MA'
+    },
+    'Avon Auto Brokers': {
+        'url': 'https://avonautobrokers.com/newandusedcars?clearall=1',
+        'pagination_url': 'https://avonautobrokers.com/newandusedcars?page=2',
+        'dealership_name': 'Avon Auto Brokers',
+        'address': '159 Memorial Drive',
+        'zipcode': '02322',
+        'city': 'Avon',
+        'state': 'MA'
+    }, 
+    'Johns Auto Sales': {
+        'url': 'https://johnsautosales.com/newandusedcars?clearall=1',
+        'pagination_url': 'https://johnsautosales.com/newandusedcars?page=2',
+        'dealership_name': "John's Auto Sales",
+        'address': '181 Somerville Avenue',
+        'zipcode': '02143',
+        'city': 'Somerville',
+        'state': 'MA'
     }
 }
 
@@ -158,7 +176,6 @@ if __name__ == '__main__':
                 
                 page_counter += 1
                 pagination_url = re.sub('PageNumber=[0-9]+', f'PageNumber={page_counter}', pagination_url)
-###############################
     elif key == 'Blasius Boston':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
@@ -178,8 +195,6 @@ if __name__ == '__main__':
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
                 title = pi.parseColumn(soup_pagination, 'div', 'v-title')
 
-                #print('page_counter:', page_counter, ' , pagination_url:', pagination_url, ' length_title:', len(title))
-                
                 if len(title) == 0:
                     break
                 else:
@@ -188,3 +203,58 @@ if __name__ == '__main__':
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
+    elif key == 'Avon Auto Brokers':
+        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+
+        if np.isnan(days_since) or days_since > 14:
+            # Start with parsing the first inventory page
+            response = requests.get(dealerships[key]['url'], headers = headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            data = parse_dealership.get_avon_inventory_data(soup, dealerships[key])
+            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+
+            # Parse out other pages if there are any available
+            pagination_url = dealerships[key]['pagination_url']
+            page_counter = 2
+
+            while (True):
+                response = requests.get(pagination_url, headers = headers)
+                soup_pagination = BeautifulSoup(response.text, "html.parser")   
+                title = pi.parse_subsection_attr(soup_pagination, 'aria-label', 'div', 'a', 'i11r-vehicle')
+                
+                if len(title) == 0:
+                    break
+                else:
+                    data = parse_dealership.get_avon_inventory_data(soup_pagination, dealerships[key])
+                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                
+                page_counter += 1
+                pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  
+############################
+    elif key == 'Johns Auto Sales':
+        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+
+        if np.isnan(days_since) or days_since > 14:
+            # Start with parsing the first inventory page
+            response = requests.get(dealerships[key]['url'], headers = headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            data = parse_dealership.get_johns_auto_inventory_data(soup, dealerships[key])
+            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+
+            # Parse out other pages if there are any available
+            pagination_url = dealerships[key]['pagination_url']
+            page_counter = 2
+
+            while (True):
+                response = requests.get(pagination_url, headers = headers)
+                soup_pagination = BeautifulSoup(response.text, "html.parser")   
+                title = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'h4', 'row no-gutters invMainCell', 'd-md-none titleWrapPhoneView', 'get_text'))
+                
+                if len(title) == 0:
+                    break
+                else:
+                    data = parse_dealership.get_johns_auto_inventory_data(soup_pagination, dealerships[key])
+                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                
+                page_counter += 1
+                pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  

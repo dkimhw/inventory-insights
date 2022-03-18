@@ -4,18 +4,91 @@ import re
 import sqlite3
 import datetime
 
-# Parse subsection of data by using their classes but to ensure all vehicles are accounted
-# even if the subsection is missing (append None in those cases)
 
-def parse_subsection(soup, main_section, main_section_class, sub_section, sub_section_class):
+def parse_subsection_attr_all(soup
+                              , attribute_name # The specific attribute content you want to parse out
+                              , main_section
+                              , sub_section
+                              , main_section_class = None
+                              , sub_section_class = None
+                              , sub_section_attr_parse_key = None # If you have a specific subsection to grab based on attribute (usually when there is no class to identify)
+                              , sub_section_attr_parse_value = None):
     col_data = []
+    if main_section_class is None:
+        main = soup.findAll(main_section)
+    else:
+        main = soup.findAll(main_section, main_section_class)
+    
+    for el in main:
+        if sub_section_class is None:
+            sub_data = el.findAll(sub_section)
+        else:
+            sub_data = el.findAll(sub_section, { "class" : sub_section_class})
 
-    for el in soup.findAll(main_section, main_section_class):
-        sub_data = el.find(sub_section, { "class" : sub_section_class})
+        for sd in sub_data:
+            if sub_section_attr_parse_key is not None and sub_section_attr_parse_value is not None:
+                if sd.get(sub_section_attr_parse_key) == sub_section_attr_parse_value:
+                    col_data.append(sd.get(attribute_name))
+            else:
+                col_data.append(sd.get(attribute_name))
+    return col_data
+
+
+# Parse subsection of data & return a specific attribute of that subsection
+# Only looks at the first subsection
+# If there are multiple subsections that need to be parsed out use parse_subsection_attr_all
+def parse_subsection_attr(soup
+                          , attribute_name
+                          , main_section
+                          , sub_section
+                          , main_section_class = None
+                          , sub_section_class = None):
+    col_data = []
+    if main_section_class is None:
+        main = soup.findAll(main_section)
+    else:
+        main = soup.findAll(main_section, main_section_class)
+    
+    for el in main:
+        if sub_section_class is None:
+            sub_data = el.find(sub_section)
+        else:
+            sub_data = el.find(sub_section, { "class" : sub_section_class})
+                
         if sub_data is None:
             col_data.append(None)
         else:
-            col_data.append(sub_data.string)
+            col_data.append(sub_data.attrs[attribute_name])
+    return col_data
+
+# Parse subsection of data by using their classes but to ensure all vehicles are accounted
+# even if the subsection is missing (append None in those cases)
+def parse_subsection(soup
+                    , main_section
+                    , sub_section
+                    , main_section_class = None
+                    , sub_section_class = None
+                    , parse_type = None):
+    col_data = []
+    if main_section_class is None:
+        main = soup.findAll(main_section)
+    else:
+        main = soup.findAll(main_section, main_section_class)    
+
+    for el in main:
+        if sub_section_class is None:
+            sub_data = el.find(sub_section)
+        else:
+            sub_data = el.find(sub_section, { "class" : sub_section_class})
+
+        if sub_data is None:
+            col_data.append(None)
+        else:
+            if parse_type == 'get_text':
+                parsed = sub_data.get_text()
+            else:
+                parsed = sub_data.string
+            col_data.append(parsed)
     return col_data
 
 # Parse out data from attributes of elements
@@ -50,13 +123,34 @@ def parseColumn(soup, html_tag, html_class):
     return new_col_list
 
 # Add new column to data frame
-def addColumnDF(df, arr, col_name):
+def add_column_df(df, arr, col_name):
     df_tmp = pd.DataFrame(arr, columns = [col_name])
     df[col_name] = df_tmp[col_name]
 
+# Conver to numeric data (price/mileage)
+def convert_to_numeric_type(lst):
+    scraped_data = lst
+    parsed_data = []
+    numeric_data = []
+    
+    for el in scraped_data:
+        if el is None:
+            parsed_data.append('')
+        else:
+            cleaned_el = el.replace('Price Includes $750 Down Payment Assistance', '')
+            parsed_data.append(re.sub("[^0-9]", "", cleaned_el))
+        
+    for data in parsed_data:
+        if data == '':
+            numeric_data.append(np.nan)
+        else:
+            numeric_data.append(int(data))
+    
+    return numeric_data    
+
 # Grab vehicle manufacture year
-def get_valid_year(soup, html_tag, html_class):
-    models = parseColumn(soup, html_tag, html_class)
+def get_valid_year(lst):
+    models = lst
     new_col_list = []
     
     for model in models:
@@ -76,8 +170,8 @@ def fix_vehicle_type(df):
             row['vehicle_type'] = None
 
 # Make & Model & Vehicle Type
-def get_car_make_model_type(soup, html_tag, html_class):
-    full_titles = parseColumn(soup, html_tag, html_class)
+def get_car_make_model_type(lst):
+    full_titles = lst
     makes = []
     models = []
     vehicle_types = []
@@ -85,7 +179,9 @@ def get_car_make_model_type(soup, html_tag, html_class):
                    , 'Hyundai', 'Kia', 'Chevrolet', 'Jeep', 'Nissan', 'Volkswagen'
                    , 'Mitsubishi', 'Mazda', 'GMC', 'Cadillac', 'Land Rover', 'Dodge'  
                    , 'Jaguar', 'Volvo', 'Alfa Romeo', 'MINI Cooper', 'Buick'
-                   , 'Fiat', 'Tesla', 'Lincoln', 'Maserati', 'smart'
+                   , 'Fiat', 'Tesla', 'Lincoln', 'Maserati', 'smart', 'Aston Martin'
+                   , 'Porsche', 'Pontiac', 'Lamborghini', 'Rolls-Royce', 'Bentley'
+                   , 'HUMMER'
                    , 'Subaru', 'Ram', 'Chrysler', 'Acura', 'Mercedes-Benz', 'Infiniti']
     
     valid_vehicle_type = ['Sedan', 'SUV', 'Coupe', 'Wagon', 'Hatchback', 'Truck', 'Cargo Van', 'Van']
@@ -139,6 +235,17 @@ def get_numeric_vehicle_data(soup, html_tag, html_class):
             numeric_data.append(int(data))
     
     return numeric_data
+
+# Helper function to clean up scraped data where the scraped data will return
+# ' Engine:     2.4 L Diesel  '
+def clean_text_data(lst, string_to_rmv = None):
+    cleaned_lst = []
+    for el in lst:
+        if string_to_rmv is None:
+            cleaned_lst.append(el.strip())
+        elif string_to_rmv.lower() in el.lower():
+            cleaned_lst.append(el.split(':')[1].strip())            
+    return cleaned_lst
 
 # Use for when vehicle data doesn't have specific class names
 def get_misc_vehicle_data(soup, html_tag, html_class, vehicle_data_type):

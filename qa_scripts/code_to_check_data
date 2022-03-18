@@ -41,7 +41,7 @@ conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
 #Doping EMPLOYEE table if already exists
-cursor.execute(f"DELETE FROM {TABLE_NAME} WHERE dealership_name = 'Blasius Boston'")
+cursor.execute(f"DELETE FROM {TABLE_NAME} WHERE dealership_name = 'Avon Auto Brokers'")
 
 #Commit your changes in the database
 conn.commit()
@@ -55,7 +55,13 @@ conn.close()
 #########################
 ## Quality assurance
 
-# Check data
+# Check null makes
+conn = sqlite3.connect('cars.db')
+sql_query = "SELECT * FROM inventory_staging WHERE make is null"
+result = pd.read_sql_query(sql_query, conn)
+result
+
+# Check other null data points
 conn = sqlite3.connect('cars.db')
 sql_query = "SELECT * FROM inventory_staging WHERE dealership_name = 'Blasius Boston'"
 result = pd.read_sql_query(sql_query, conn)
