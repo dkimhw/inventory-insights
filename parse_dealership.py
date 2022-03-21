@@ -393,3 +393,27 @@ def get_johns_auto_inventory_data(soup, dealership_info):
     cars['scraped_date'] = datetime.now(tz = None)
 
     return cars
+
+
+def get_jm_auto_inventory_data(soup, dealership_info):
+    # Initialize empty data frame
+    cars = pd.DataFrame()
+
+    # Add title
+    title = pi.parse_subsection_attr(soup, 'title','div', 'a', 'thumbnail', 'listitemlink')
+    pi.add_column_df(cars, title, 'title') 
+
+    # Add year, make, model, trim
+    years = pi.convert_to_numeric_type(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleModelDate'))   
+    makes = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'manufacturer')
+    models = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'model')
+    vtypes = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleConfiguration')
+    pi.add_column_df(cars, years, 'year')
+    pi.add_column_df(cars, makes, 'make')
+    pi.add_column_df(cars, models, 'model_trim')
+    pi.add_column_df(cars, vtypes, 'vehicle_type')
+
+    # Clean title
+    cars['title'] = cars['year'] + cars['make'] + cars['model_trim'] + cars['vehicle_type']
+    
+    return cars

@@ -1,11 +1,16 @@
 
-Potential:
+MA:
 * https://www.everettautogallery.com/cars-for-sale
 * https://www.webstercar.com/cars-for-sale
-* https://www.maplestautocenter.com/cars-for-sale
 * https://www.expressma.com/cars-for-sale
-* https://www.abingtonautomall.com/inventory/
 * https://www.modernautosales.com/used-inventory/index.htm 
+
+
+CT
+* https://www.jmautomotive.com/cars-for-sale-in-Naugatuck-CT-Hartford-New-Haven/used_cars
+* https://www.hartefamilymotors.com/inventory/used-vehicles/
+
+
 
 Why?
 * https://www.midwayautomotive.com/used-inventory/index.htm?sortBy=internetPrice%20asc
@@ -13,3 +18,5 @@ Why?
 * https://www.bidcarsboston.com/used-inventory/index.htm
   - I think it's dynamically loading it via JS
   - The html file itself doesn't have the inventory info
+  - All the .htm ones load inventory via JS I think so asking that file from the server
+  - gets me zero inventory data

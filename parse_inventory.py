@@ -5,6 +5,29 @@ import sqlite3
 import datetime
 
 
+# Parses all the HTML elements under a given section
+# Can give a specific attribute to look for and returns the text associated with each tag that has the key-value you are looking for
+def parse_main_section_attr_text_all(soup
+                              , main_section
+                              , main_section_class = None
+                              , sub_section_attr_parse_key = None # If you have a specific subsection to grab based on attribute (usually when there is no class to identify)
+                              , sub_section_attr_parse_value = None):
+    col_data = []
+    if main_section_class is None:
+        main = soup.findAll(main_section)
+    else:
+        main = soup.findAll(main_section, main_section_class)
+    
+    for el in main:
+        sub_data = el.findAll()
+        for sd in sub_data:
+            if sub_section_attr_parse_key is not None and sub_section_attr_parse_value is not None:
+                if sd.get(sub_section_attr_parse_key) == sub_section_attr_parse_value:
+                    col_data.append(sd.getText())
+            else:
+                col_data.append(sd.getText())
+    return col_data
+
 def parse_subsection_attr_all(soup
                               , attribute_name # The specific attribute content you want to parse out
                               , main_section
