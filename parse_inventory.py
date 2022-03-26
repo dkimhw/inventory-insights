@@ -20,12 +20,18 @@ def parse_main_section_attr_text_all(soup
     
     for el in main:
         sub_data = el.findAll()
+        appendedData = False
         for sd in sub_data:
             if sub_section_attr_parse_key is not None and sub_section_attr_parse_value is not None:
                 if sd.get(sub_section_attr_parse_key) == sub_section_attr_parse_value:
                     col_data.append(sd.getText())
+                    appendedData = True
             else:
                 col_data.append(sd.getText())
+                appendedData = True
+        if (appendedData == False):
+            col_data.append(None)
+
     return col_data
 
 def parse_subsection_attr_all(soup
@@ -264,8 +270,10 @@ def get_numeric_vehicle_data(soup, html_tag, html_class):
 def clean_text_data(lst, string_to_rmv = None):
     cleaned_lst = []
     for el in lst:
-        if string_to_rmv is None:
-            cleaned_lst.append(el.strip())
+        if el is None:
+            cleaned_lst.append(None)            
+        elif string_to_rmv is None:
+            cleaned_lst.append(el.strip())       
         elif string_to_rmv.lower() in el.lower():
             cleaned_lst.append(el.split(':')[1].strip())            
     return cleaned_lst

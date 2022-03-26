@@ -403,17 +403,45 @@ def get_jm_auto_inventory_data(soup, dealership_info):
     title = pi.parse_subsection_attr(soup, 'title','div', 'a', 'thumbnail', 'listitemlink')
     pi.add_column_df(cars, title, 'title') 
 
-    # Add year, make, model, trim
+    # Add year, make, model_trim, vehicle_type, model, trim
     years = pi.convert_to_numeric_type(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleModelDate'))   
     makes = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'manufacturer')
     models = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'model')
-    vtypes = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleConfiguration')
+    trim = pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleConfiguration')
     pi.add_column_df(cars, years, 'year')
     pi.add_column_df(cars, makes, 'make')
-    pi.add_column_df(cars, models, 'model_trim')
-    pi.add_column_df(cars, vtypes, 'vehicle_type')
+    cars['model_trim'] = None
+    cars['vehicle_type'] = None
+    pi.add_column_df(cars, models, 'model')
+    pi.add_column_df(cars, trim, 'trim')
+    cars['model_trim'] = cars['model'] + ' ' + cars['trim']
 
     # Clean title
-    cars['title'] = cars['year'] + cars['make'] + cars['model_trim'] + cars['vehicle_type']
+    cars['title'] = cars['year'].apply(str) + ' ' + cars['make'] + ' ' + cars['model_trim']
     
+    # Add mileage
+    miles = pi.convert_to_numeric_type(pi.parse_subsection(soup, 'div', 'li', 'thumbnail', 'list-group-item mileage', 'get_text'))
+    pi.add_column_df(cars, miles, 'vehicle_mileage')
+
+    # Add price
+    car_prices = pi.convert_to_numeric_type(pi.parse_subsection(soup, 'div', 'div', 'thumbnail', 'pricetag', 'get_text'))
+    pi.add_column_df(cars, car_prices, 'price')       
+
+    # Add misc vehicle info
+    pi.add_column_df(cars, pi.clean_text_data(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'color')), 'exterior_color')
+    pi.add_column_df(cars, pi.clean_text_data(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleInteriorColor')), 'interior_color')
+    pi.add_column_df(cars, pi.clean_text_data(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleTransmission')), 'transmission')
+    pi.add_column_df(cars, pi.clean_text_data(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleEngine')), 'engine')
+    pi.add_column_df(cars, pi.clean_text_data(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'driveWheelConfiguration')), 'drivetrain')
+    pi.add_column_df(cars, pi.clean_text_data(pi.parse_main_section_attr_text_all(soup, 'div', 'thumbnail', 'itemprop', 'vehicleIdentificationNumber')), 'vin')   
+
+    # Add dealership info + scrape date
+    cars['dealership_name'] = dealership_info['dealership_name']
+    cars['dealership_address'] = dealership_info['address']
+    cars['dealership_zipcode'] = dealership_info['zipcode']
+    cars['dealership_city'] = dealership_info['city']
+    cars['dealership_state'] = dealership_info['state']
+    cars['inventory_url'] = dealership_info['url']
+    cars['scraped_date'] = datetime.now(tz = None)     
+
     return cars

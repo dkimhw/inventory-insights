@@ -66,11 +66,20 @@ dealerships = {
     'Johns Auto Sales': {
         'url': 'https://johnsautosales.com/newandusedcars?clearall=1',
         'pagination_url': 'https://johnsautosales.com/newandusedcars?page=2',
-        'dealership_name': "John's Auto Sales",
+        'dealership_name': "Johns Auto Sales",
         'address': '181 Somerville Avenue',
         'zipcode': '02143',
         'city': 'Somerville',
         'state': 'MA'
+    },
+    'J&M Automotive': {
+        'url': 'https://www.jmautomotive.com/cars-for-sale-in-Naugatuck-CT-Hartford-New-Haven/used_cars',
+        'pagination_url': 'https://www.jmautomotive.com/inventory.aspx?pg=2&sort=12&limit=50&vstatus=1&status=6',
+        'dealership_name': 'J&M Automotive',
+        'address': '756/820 New Haven Road',
+        'zipcode': '06770',
+        'city': 'Naugatuck',
+        'state': 'CT'
     }
 }
 
@@ -86,6 +95,7 @@ if __name__ == '__main__':
   DB_NAME = 'cars.db'
 
   for key in dealerships:
+    print(key)
     if key == 'Bostonyan Auto Group':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
@@ -230,7 +240,6 @@ if __name__ == '__main__':
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  
-############################
     elif key == 'Johns Auto Sales':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
@@ -248,7 +257,7 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'h4', 'row no-gutters invMainCell', 'd-md-none titleWrapPhoneView', 'get_text'))
+                title = pi.clean_text_data(pi.parse_subsection(soup_pagination, 'div', 'h4', 'row no-gutters invMainCell', 'd-md-none titleWrapPhoneView', 'get_text'))
                 
                 if len(title) == 0:
                     break
@@ -258,3 +267,33 @@ if __name__ == '__main__':
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  
+############################
+    elif key == 'J&M Automotive':
+        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        print(days_since)
+
+        if np.isnan(days_since) or days_since > 14:
+            # Start with parsing the first inventory page
+            response = requests.get(dealerships[key]['url'], headers = headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            data = parse_dealership.get_jm_auto_inventory_data(soup, dealerships[key])
+            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+
+            # Parse out other pages if there are any available
+            pagination_url = dealerships[key]['pagination_url']
+            page_counter = 2
+
+            while (True):
+                response = requests.get(pagination_url, headers = headers)
+                soup_pagination = BeautifulSoup(response.text, "html.parser")   
+                title = pi.parse_subsection_attr(soup_pagination, 'title','div', 'a', 'thumbnail', 'listitemlink')
+                
+                print(pagination_url)
+                if len(title) == 0:
+                    break
+                else:
+                    data = parse_dealership.get_jm_auto_inventory_data(soup_pagination, dealerships[key])
+                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                
+                page_counter += 1
+                pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)  
