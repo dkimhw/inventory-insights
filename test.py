@@ -92,20 +92,24 @@ if __name__ == '__main__':
   }
 
   TABLE_NAME = 'test'
+  ERROR_TBL_NAME = 'parsing_errors_test'
   DB_NAME = 'cars.db'
 
   for key in dealerships:
     print(key)
-    if key == 'JM Automotive':
+    if key == 'Johns Auto Sales':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
-        print(days_since)
 
         if np.isnan(days_since) or days_since > 14:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_jm_auto_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_johns_auto_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -114,14 +118,17 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.parse_subsection_attr(soup_pagination, 'title','div', 'a', 'thumbnail', 'listitemlink')
+                title = pi.clean_text_data(pi.parse_subsection(soup_pagination, 'div', 'h4', 'row no-gutters invMainCell', 'd-md-none titleWrapPhoneView', 'get_text'))
                 
                 print(pagination_url)
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_jm_auto_inventory_data(soup_pagination, dealerships[key])
-                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                    data = parse_dealership.get_johns_auto_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
                 
                 page_counter += 1
-                pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)  
+                pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  

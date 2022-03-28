@@ -5,8 +5,13 @@ import sqlite3
 import datetime
 
 
+##########################################
+# HTML Parsing Helper Functions
+##########################################
+
 # Parses all the HTML elements under a given section
-# Can give a specific attribute to look for and returns the text associated with each tag that has the key-value you are looking for
+# Can give a specific attribute to look for and returns 
+# the text associated with each tag that has the key-value you are looking for
 def parse_main_section_attr_text_all(soup
                               , main_section
                               , main_section_class = None
@@ -34,6 +39,9 @@ def parse_main_section_attr_text_all(soup
 
     return col_data
 
+# Function returns the contents of elements with a specific attribute under specific main & subsection
+# It will loop over all subsections to return the elements with attribute name
+# You can all pass in specific attr key-value pair that you are looking for (i.e. the subsection has multiple elements with same attribute_name)
 def parse_subsection_attr_all(soup
                               , attribute_name # The specific attribute content you want to parse out
                               , main_section
@@ -63,9 +71,8 @@ def parse_subsection_attr_all(soup
     return col_data
 
 
-# Parse subsection of data & return a specific attribute of that subsection
-# Only looks at the first subsection
-# If there are multiple subsections that need to be parsed out use parse_subsection_attr_all
+# Parse subsection of the passed in HTML Data & returns data for a specific attribute of that subsection
+# This function only looks at the first subsection; if there are multiple subsections that need to be parsed out use parse_subsection_attr_all
 def parse_subsection_attr(soup
                           , attribute_name
                           , main_section
@@ -90,8 +97,9 @@ def parse_subsection_attr(soup
             col_data.append(sub_data.attrs[attribute_name])
     return col_data
 
-# Parse subsection of data by using their classes but to ensure all vehicles are accounted
-# even if the subsection is missing (append None in those cases)
+# Parse subsection of the HTML data
+# Can pass in specific classes for main sections and subsections for more targeted  
+# Parse Type = can specify string (the direct content) or specify get_text which will return text of all selected elements in subsection
 def parse_subsection(soup
                     , main_section
                     , sub_section
@@ -110,6 +118,7 @@ def parse_subsection(soup
         else:
             sub_data = el.find(sub_section, { "class" : sub_section_class})
 
+        # If subsection is missing append One
         if sub_data is None:
             col_data.append(None)
         else:
@@ -120,36 +129,10 @@ def parse_subsection(soup
             col_data.append(parsed)
     return col_data
 
-# Parse out data from attributes of elements
-def parse_attr(soup, attr_name):
-    attrs = []
-    for elm in soup.find_all('span'):
-        if attr_name in elm.attrs:
-            if elm.attrs[attr_name] != '':
-                attrs.append(elm.attrs[attr_name])
-    return attrs
 
-# Parse a direct descendant
-def parse_direct_children(soup, css_selector):
-  data_col = soup.select(css_selector)
-  # soup.select('h4 > a')[0].text.replace('\r', '').replace('\n', '').strip()
-  new_col_list = []
-
-  for i in range(0, len(data_col)):
-    cleaned_text = data_col[i].text.replace('\r', '').replace('\n', '').strip()
-    new_col_list.append(cleaned_text)
-
-  return new_col_list
-
-# Parse a specific tag + class
-def parseColumn(soup, html_tag, html_class):
-    dataColumn = soup.find_all(html_tag, class_=html_class)
-    new_col_list = []
-    
-    for i in range(0, len(dataColumn)):
-        new_col_list.append(dataColumn[i].get_text().strip())
-        
-    return new_col_list
+##########################################
+# Other Misc Helper Functions for Parsing
+##########################################
 
 # Add new column to data frame
 def add_column_df(df, arr, col_name):
@@ -248,25 +231,7 @@ def get_car_make_model_type(lst):
 
     return makes, models, vehicle_types
 
-def get_numeric_vehicle_data(soup, html_tag, html_class):
-    scraped_data = parseColumn(soup, html_tag, html_class)
-    parsed_data = []
-    numeric_data = []
-    
-    for el in scraped_data:
-        cleaned_el = el.replace('Price Includes $750 Down Payment Assistance', '')
-        parsed_data.append(re.sub("[^0-9]", "", cleaned_el))
-        
-    for data in parsed_data:
-        if data == '':
-            numeric_data.append(np.nan)
-        else:
-            numeric_data.append(int(data))
-    
-    return numeric_data
-
 # Helper function to clean up scraped data where the scraped data will return
-# ' Engine:     2.4 L Diesel  '
 def clean_text_data(lst, string_to_rmv = None):
     cleaned_lst = []
     for el in lst:
@@ -278,25 +243,31 @@ def clean_text_data(lst, string_to_rmv = None):
             cleaned_lst.append(el.split(':')[1].strip())            
     return cleaned_lst
 
-# Use for when vehicle data doesn't have specific class names
-def get_misc_vehicle_data(soup, html_tag, html_class, vehicle_data_type):
-    misc_vehicle_data = parseColumn(soup, html_tag, html_class)
-    vehicle_data_list = []
-    for row in misc_vehicle_data:
-        if vehicle_data_type not in row.lower():
-            vehicle_data_list.append(None)
-            continue
+def data_length_validation(dict, valid_len):
+  for key in dict:
+    curr_key_len = len(dict[key])
+    if (curr_key_len != valid_len):
+      return False
+  
+  return True  
 
-        for el in row.split('\n'):
-            if vehicle_data_type.lower() in el.lower():
-                vehicle_data_list.append(el.split(':')[1].strip())
-    return vehicle_data_list
+##########################################
+# Sqlite3 Inventory Parsing Helper Functions
+##########################################
 
+# Given a dataframe - adds it to a sqlite database table
+def add_data_to_sqlite3(db_name, tbl_name, df):
+    # Add data to a SQLite database
+    conn = sqlite3.connect(db_name) # 'cars.db'
+    df.to_sql(tbl_name, conn, if_exists='append', index=False)   
+
+# Given a dataframe - adds it to a sqlite database table
 def add_inventory_data_sqlite3(db_name, tbl_name, df):
     # Add data to a SQLite database
     conn = sqlite3.connect(db_name) # 'cars.db'
     df.to_sql(tbl_name, conn, if_exists='append', index=False)    
 
+# Returns the last time a dealership was scraped
 def days_since_last_scrape(dealership_name, db_name, tbl_name):
     # First check if the table exists
     conn = sqlite3.connect('cars.db')
@@ -316,3 +287,58 @@ def days_since_last_scrape(dealership_name, db_name, tbl_name):
         days  = divmod(duration_in_s, 86400)[0]
         
         return days
+
+
+##########################################
+# To Refactor & Get Rid of Later
+##########################################
+
+# Parse a specific tag + class
+def parseColumn(soup, html_tag, html_class):
+    dataColumn = soup.find_all(html_tag, class_=html_class)
+    new_col_list = []
+    
+    for i in range(0, len(dataColumn)):
+        new_col_list.append(dataColumn[i].get_text().strip())
+        
+    return new_col_list
+
+def get_numeric_vehicle_data(soup, html_tag, html_class):
+    scraped_data = parseColumn(soup, html_tag, html_class)
+    parsed_data = []
+    numeric_data = []
+    
+    for el in scraped_data:
+        cleaned_el = el.replace('Price Includes $750 Down Payment Assistance', '')
+        parsed_data.append(re.sub("[^0-9]", "", cleaned_el))
+        
+    for data in parsed_data:
+        if data == '':
+            numeric_data.append(np.nan)
+        else:
+            numeric_data.append(int(data))
+    
+    return numeric_data
+
+# Use for when vehicle data doesn't have specific class names
+def get_misc_vehicle_data(soup, html_tag, html_class, vehicle_data_type):
+    misc_vehicle_data = parseColumn(soup, html_tag, html_class)
+    vehicle_data_list = []
+    for row in misc_vehicle_data:
+        if vehicle_data_type not in row.lower():
+            vehicle_data_list.append(None)
+            continue
+
+        for el in row.split('\n'):
+            if vehicle_data_type.lower() in el.lower():
+                vehicle_data_list.append(el.split(':')[1].strip())
+    return vehicle_data_list
+
+# Parse out data from attributes of elements
+def parse_attr(soup, attr_name):
+    attrs = []
+    for elm in soup.find_all('span'):
+        if attr_name in elm.attrs:
+            if elm.attrs[attr_name] != '':
+                attrs.append(elm.attrs[attr_name])
+    return attrs
