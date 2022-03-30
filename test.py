@@ -97,19 +97,19 @@ if __name__ == '__main__':
 
   for key in dealerships:
     print(key)
-    if key == 'Johns Auto Sales':
+    if key == 'Avon Auto Brokers':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
         if np.isnan(days_since) or days_since > 14:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_johns_auto_inventory_data(soup, dealerships[key], dealerships[key]['url'])
-
+            data = parse_dealership.get_avon_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+            
             if 'error' in data.columns:
                 pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
             else:
-                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)            
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -118,13 +118,12 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.clean_text_data(pi.parse_subsection(soup_pagination, 'div', 'h4', 'row no-gutters invMainCell', 'd-md-none titleWrapPhoneView', 'get_text'))
+                title = pi.parse_subsection_attr(soup_pagination, 'aria-label', 'div', 'a', 'i11r-vehicle')
                 
-                print(pagination_url)
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_johns_auto_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    data = parse_dealership.get_avon_inventory_data(soup_pagination, dealerships[key], pagination_url)
                     if 'error' in data.columns:
                         pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
                     else:

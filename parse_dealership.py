@@ -233,25 +233,19 @@ def get_newton_auto_inventory_data(soup, dealership_info):
     return cars
 
 def get_blasius_inventory_data(soup, dealership_info):
-    # Initialize empty data frame
+    # Initialize empty data frame & dictionary
     cars = pd.DataFrame()
+    cars_dict = {}
 
     # Add title
     title = pi.parseColumn(soup, 'div', 'v-title')
-    pi.add_column_df(cars, title, 'title')        
+    valid_len_data = len(title)     
     
-    # Add vehicle manufacture date
+    # Parse year, make, model_trim, vehicle_type, model, trim
     years = pi.get_valid_year(title)   
-    pi.add_column_df(cars, years, 'year')
-
-    # Add make, models, and vehicle type
     makes, models, vtypes = pi.get_car_make_model_type(title)
-    pi.add_column_df(cars, makes, 'make')
-    pi.add_column_df(cars, models, 'model_trim')
-    pi.add_column_df(cars, vtypes, 'vehicle_type')
-    pi.fix_vehicle_type(cars)
+    
 
-    # Model & Trim
     cars['model'] = pi.parse_subsection_attr_all(soup, 'content', 'div', 'meta'
                           , main_section_class = 'vehicle-info'
                           , sub_section_attr_parse_key = 'itemprop'
@@ -284,63 +278,86 @@ def get_blasius_inventory_data(soup, dealership_info):
     cars['inventory_url'] = dealership_info['url']
     cars['scraped_date'] = datetime.now(tz = None)
 
+    pi.fix_vehicle_type(cars)
+
     return cars    
 
-def get_avon_inventory_data(soup, dealership_info):
-    # Initialize empty data frame
+def get_avon_inventory_data(soup, dealership_info, url):
+    # Initialize empty data frame & dictionary
     cars = pd.DataFrame()
+    cars_dict = {}
 
     # Add title
     title = pi.parse_subsection_attr(soup, 'aria-label', 'div', 'a', 'i11r-vehicle')
-    pi.add_column_df(cars, title, 'title') 
+    valid_len_data = len(title)
 
-    # Add vehicle manufacture date
+    # Parse year, make, model_trim, vehicle_type, model, trim
     years = pi.get_valid_year(title)   
-    pi.add_column_df(cars, years, 'year')
-
-    # Add year, make, model, trim 
-    makes, models, vtypes = pi.get_car_make_model_type(title)
-    pi.add_column_df(cars, makes, 'make')
-    pi.add_column_df(cars, models, 'model_trim')
-
+    makes, model_trim, vehicle_type = pi.get_car_make_model_type(title)
     # Avon has a separate element containing vehicle type
-    vtypes = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optBody', 'get_text'), 'Body Type')
-    pi.add_column_df(cars, vtypes, 'vehicle_type')
-
-    # Model & Trim
-    # Trim is not paraseable easily (there is no section for it) for all dealerships
-    # Same for Model - but when it's easily parsable - we should add it here
-    model = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optModel', 'get_text'), 'Model')
-    pi.add_column_df(cars, model, 'model')
+    vehicle_type = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optBody', 'get_text'), 'Body Type')
+    models = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optModel', 'get_text'), 'Model')
     trim = pi.parse_subsection(soup, 'div', 'span', 'i11r-vehicle', 'vehicleTrim')
-    pi.add_column_df(cars, trim, 'trim')
 
     # Add mileage col
     miles = pi.convert_to_numeric_type(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optMileage', 'get_text'))
-    pi.add_column_df(cars, miles, 'vehicle_mileage')
 
     # Add price
     car_prices = pi.convert_to_numeric_type(pi.parse_subsection(soup, 'div', 'span', 'i11r-vehicle', 'price-2'))
-    pi.add_column_df(cars, car_prices, 'price')        
 
-    # Add Colors & transmission & other cols
-    pi.add_column_df(cars, pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optColor', 'get_text'), 'Color'), 'exterior_color')
-    pi.add_column_df(cars, pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optInteriorColor', 'get_text'), 'Interior Color'), 'interior_color')
-    pi.add_column_df(cars, pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optTrans2', 'get_text'), 'Trans'), 'transmission')
-    pi.add_column_df(cars, pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optEngine2', 'get_text'), 'Engine'), 'engine')
-    pi.add_column_df(cars, pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optDrive', 'get_text'), 'Drive'), 'drivetrain')
-    pi.add_column_df(cars, pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optVin', 'get_text'), 'VIN'), 'vin')
+    # Misc car information
+    exterior_color = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optColor', 'get_text'), 'Color')
+    interior_color = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optInteriorColor', 'get_text'), 'Interior Color')
+    transmission = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optTrans2', 'get_text'), 'Trans')
+    engine = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optEngine2', 'get_text'), 'Engine')
+    drivetrain = pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optDrive', 'get_text'), 'Drive')
+    vin =  pi.clean_text_data(pi.parse_subsection(soup, 'div', 'p', 'i11r-vehicle', 'i11r_optVin', 'get_text'), 'VIN')
 
-    # Add dealership info + scrape date
-    cars['dealership_name'] = dealership_info['dealership_name']
-    cars['dealership_address'] = dealership_info['address']
-    cars['dealership_zipcode'] = dealership_info['zipcode']
-    cars['dealership_city'] = dealership_info['city']
-    cars['dealership_state'] = dealership_info['state']
-    cars['inventory_url'] = dealership_info['url']
-    cars['scraped_date'] = datetime.now(tz = None)
+    # Append all parsed data to cars_list
+    cars_dict['title'] = title
+    cars_dict['year'] = years
+    cars_dict['make'] = makes
+    cars_dict['model_trim'] = model_trim
+    cars_dict['vehicle_type'] = vehicle_type
+    cars_dict['model'] = models
+    cars_dict['trim'] = trim
+    cars_dict['vehicle_mileage'] = miles
+    cars_dict['price'] = car_prices
+    cars_dict['exterior_color'] = exterior_color
+    cars_dict['interior_color'] = interior_color
+    cars_dict['transmission'] = transmission
+    cars_dict['engine'] = engine
+    cars_dict['drivetrain'] = drivetrain
+    cars_dict['vin'] = vin
 
-    return cars
+    # Check if data is valid
+    is_valid = pi.data_length_validation(cars_dict, valid_len_data)
+
+    if (is_valid):
+      # If valid create cars dataframe to return
+      for key in cars_dict:
+        pi.add_column_df(cars, cars_dict[key], key)
+
+      # Add dealership info
+      cars['dealership_name'] = dealership_info['dealership_name']
+      cars['dealership_address'] = dealership_info['address']
+      cars['dealership_zipcode'] = dealership_info['zipcode']
+      cars['dealership_city'] = dealership_info['city']
+      cars['dealership_state'] = dealership_info['state']
+      cars['inventory_url'] = dealership_info['url']
+      cars['scraped_date'] = datetime.now(tz = None)  
+
+      # Additional changes
+      cars['title'] = cars['year'].apply(str) + ' ' + cars['make'] + ' ' + cars['model_trim']
+
+      return cars
+    else:
+      error_df = pd.DataFrame()
+      error_df.at[0, 'error'] = 'Data Validation'
+      error_df.at[0, 'dealership'] = dealership_info['dealership_name']
+      error_df.at[0, 'date'] = datetime.now(tz = None)  
+      error_df.at[0, 'url'] = url
+      return error_df
 
 def get_johns_auto_inventory_data(soup, dealership_info, url):
     # Initialize empty data frame & dictionary
@@ -414,7 +431,6 @@ def get_johns_auto_inventory_data(soup, dealership_info, url):
       error_df.at[0, 'date'] = datetime.now(tz = None)  
       error_df.at[0, 'url'] = url
       return error_df
-
 
 def get_jm_auto_inventory_data(soup, dealership_info, url):
     # Initialize empty data frame & dictionary

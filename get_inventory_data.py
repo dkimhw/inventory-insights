@@ -220,8 +220,12 @@ if __name__ == '__main__':
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_avon_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_avon_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+            
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)            
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -235,8 +239,11 @@ if __name__ == '__main__':
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_avon_inventory_data(soup_pagination, dealerships[key])
-                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                    data = parse_dealership.get_avon_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  
