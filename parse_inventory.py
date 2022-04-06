@@ -98,6 +98,39 @@ def parse_subsection_attr(soup
     return col_data
 
 # Parse subsection of the HTML data
+# But instead of only taking the first subsection 
+# It finds and loops through all subsection with given arguments
+def parse_subsection_all(soup
+                    , main_section
+                    , sub_section
+                    , main_section_class = None
+                    , sub_section_class = None
+                    , parse_type = None):
+    col_data = []
+    if main_section_class is None:
+        main = soup.findAll(main_section)
+    else:
+        main = soup.findAll(main_section, main_section_class)    
+
+    for el in main:
+        if sub_section_class is None:
+            sub_data = el.findAll(sub_section)
+        else:
+            sub_data = el.findAll(sub_section, { "class" : sub_section_class})
+
+        for sd in sub_data:
+            # If subsection is missing append One
+            if sd is None:
+                col_data.append(None)
+            else:
+                if parse_type == 'get_text':
+                    parsed = sd.get_text()
+                else:
+                    parsed = sd.string
+                col_data.append(parsed)
+    return col_data
+
+# Parse subsection of the HTML data
 # Can pass in specific classes for main sections and subsections for more targeted  
 # Parse Type = can specify string (the direct content) or specify get_text which will return text of all selected elements in subsection
 def parse_subsection(soup
@@ -129,6 +162,15 @@ def parse_subsection(soup
             col_data.append(parsed)
     return col_data
 
+# Parse a specific tag with a specific class
+def parse_tag(soup, html_tag, html_class):
+    dataColumn = soup.find_all(html_tag, class_=html_class)
+    new_col_list = []
+    
+    for i in range(0, len(dataColumn)):
+        new_col_list.append(dataColumn[i].get_text().strip())
+        
+    return new_col_list
 
 ##########################################
 # Other Misc Helper Functions for Parsing
@@ -193,7 +235,7 @@ def get_car_make_model_type(lst):
                    , 'Jaguar', 'Volvo', 'Alfa Romeo', 'MINI Cooper', 'Buick'
                    , 'Fiat', 'Tesla', 'Lincoln', 'Maserati', 'smart', 'Aston Martin'
                    , 'Porsche', 'Pontiac', 'Lamborghini', 'Rolls-Royce', 'Bentley'
-                   , 'HUMMER'
+                   , 'HUMMER', 'Mercury'
                    , 'Subaru', 'Ram', 'Chrysler', 'Acura', 'Mercedes-Benz', 'Infiniti']
     
     valid_vehicle_type = ['Sedan', 'SUV', 'Coupe', 'Wagon', 'Hatchback', 'Truck', 'Cargo Van', 'Van']

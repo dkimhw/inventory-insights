@@ -92,28 +92,36 @@ if __name__ == '__main__':
   TABLE_NAME = 'inventory_staging'
   ERROR_TBL_NAME = 'parsing_errors'
   DB_NAME = 'cars.db'
+  TIME_BTWN_SCRAPE = 21
 
   for key in dealerships:
-    print(key)
+    print("Processing: ", key)
     if key == 'Bostonyan Auto Group':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        # Only import if not in table or if days since > 14
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")        
-            data = parse_dealership.get_bostonyan_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_bostonyan_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+            
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
     elif key == 'Direct Auto Mecca':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_direct_auto_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_direct_auto_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -122,25 +130,32 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.parseColumn(soup_pagination, 'h2', 'ebiz-vdp-title color m-0')
+                title = pi.parse_subsection(soup_pagination, 'div', 'h2', 'ml-0 ml-lg-5 pt-4 pb-2 border-bottom', 'ebiz-vdp-title color m-0')
                 
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_direct_auto_inventory_data(soup_pagination, dealerships[key])
-                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                    data = parse_dealership.get_direct_auto_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
     elif key == 'Fafama Auto Sales':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_fafama_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_fafama_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -149,25 +164,32 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.parseColumn(soup_pagination, 'h2', 'color m-0 ebiz-vdp-title')
+                title = pi.parse_subsection(soup_pagination, 'div', 'h2', 'ml-0 ml-lg-5 pt-4 pb-2 border-bottom', 'color m-0 ebiz-vdp-title')
                 
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_fafama_inventory_data(soup_pagination, dealerships[key])
-                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                    data = parse_dealership.get_fafama_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
     elif key == 'Newton Automotive Sales':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_newton_auto_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_newton_auto_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -176,25 +198,32 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.parseColumn(soup_pagination, 'h3', 'vehicle-snapshot__title')
+                title = pi.parse_subsection(soup_pagination, 'div', 'h3', 'vehicle-snapshot__information', 'vehicle-snapshot__title')
                 
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_newton_auto_inventory_data(soup_pagination, dealerships[key])
-                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                    data = parse_dealership.get_newton_auto_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)  
                 
                 page_counter += 1
                 pagination_url = re.sub('PageNumber=[0-9]+', f'PageNumber={page_counter}', pagination_url)
     elif key == 'Blasius Boston':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_blasius_inventory_data(soup, dealerships[key])
-            pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+            data = parse_dealership.get_blasius_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
             # Parse out other pages if there are any available
             pagination_url = dealerships[key]['pagination_url']
@@ -203,20 +232,23 @@ if __name__ == '__main__':
             while (True):
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
-                title = pi.parseColumn(soup_pagination, 'div', 'v-title')
+                title = pi.clean_text_data(pi.parse_subsection(soup_pagination, 'div', 'div', 'vehicle', 'v-title', 'get_text'))
 
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_blasius_inventory_data(soup_pagination, dealerships[key])
-                    pi.add_inventory_data_sqlite3(DB_NAME, TABLE_NAME, data)
+                    data = parse_dealership.get_blasius_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)                    
                 
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
     elif key == 'Avon Auto Brokers':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
@@ -250,7 +282,7 @@ if __name__ == '__main__':
     elif key == 'Johns Auto Sales':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
@@ -286,7 +318,7 @@ if __name__ == '__main__':
         days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
         print(days_since)
 
-        if np.isnan(days_since) or days_since > 14:
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")

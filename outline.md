@@ -1,21 +1,23 @@
 
 ## Next Steps:
-1. Script to move data in staging to production & wiping staging
-    - Done
-2. Build out data validations when parsing dealerships
+1. Script to move data in staging to production & wiping staging (Done)
+2. Build out data validations when parsing dealerships (Done)
     - If len of each data col is different it's not valid
     - If not valid: 
         - Do not append the data to inventory_staging
         - Add to a table in cars.db that logs what the error was
     - Else:
         - Add to inventory_staging
-3. Start working on dash
-4. Build out the main dashboard page
-5. Build out a 2nd dashboard page
-6. Additional dealerships to parse
+3. Add up to 15 dealerships - currently at 8
+4. Start working on dash
+5. Build out the main dashboard page
+6. Build out a 2nd dashboard page
+7. Additional dealerships to parse
 
 
-
+## Run Scripts in Order
+1. `python get_inventory_data.py`
+2. `python move_to_prod.py`
 
 ## Low-Hanging Questions:
 * Avg year that dealerships stock
