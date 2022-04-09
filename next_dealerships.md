@@ -7,8 +7,7 @@ MA:
 
 
 CT
-* https://www.jmautomotive.com/cars-for-sale-in-Naugatuck-CT-Hartford-New-Haven/used_cars
-* https://www.hartefamilymotors.com/inventory/used-vehicles/
+* 
 
 
 
@@ -20,3 +19,5 @@ Why?
   - The html file itself doesn't have the inventory info
   - All the .htm ones load inventory via JS I think so asking that file from the server
   - gets me zero inventory data
+
+

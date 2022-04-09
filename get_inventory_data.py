@@ -80,7 +80,16 @@ dealerships = {
         'zipcode': '06770',
         'city': 'Naugatuck',
         'state': 'CT'
-    }
+    },
+    'CT Auto': {
+        'url': 'https://www.ct-auto.com/cars-for-sale-in-Bridgeport-CT-Waterbury-Norwich/used_cars',
+        'pagination_url': None,
+        'dealership_name': 'CT Auto',
+        'address': '7 Wayne Street', 
+        'zipcode': '06606',
+        'city': 'Bridgeport',
+        'state': 'CT'
+    }    
 }
 
 if __name__ == '__main__':
@@ -351,3 +360,19 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)  
 ############################
+    elif key == 'CT Auto':
+        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        print(days_since)
+
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
+            # Start with parsing the first inventory page
+            response = requests.get(dealerships[key]['url'], headers = headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            data = parse_dealership.get_ct_auto_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
+
+            # No additional pages to parse
