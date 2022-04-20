@@ -320,7 +320,7 @@ def days_since_last_scrape(dealership_name, db_name, tbl_name):
         return np.nan
     else:
         conn = sqlite3.connect(db_name)
-        sql_query = f"SELECT MIN(scraped_date) AS min_scraped_date from {tbl_name} WHERE dealership_name = '{dealership_name}'"
+        sql_query = f"SELECT MAX(scraped_date) AS min_scraped_date from {tbl_name} WHERE dealership_name = '{dealership_name}'"
         result = pd.read_sql_query(sql_query, conn)
         past = pd.to_datetime(result['min_scraped_date'])[0]
         now = datetime.datetime.now()

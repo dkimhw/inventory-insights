@@ -98,6 +98,7 @@ if __name__ == '__main__':
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
   }
 
+  PROD_TABLE = 'inventory'
   TABLE_NAME = 'inventory_staging'
   ERROR_TBL_NAME = 'parsing_errors'
   DB_NAME = 'cars.db'
@@ -106,7 +107,7 @@ if __name__ == '__main__':
   for key in dealerships:
     print("Processing: ", key)
     if key == 'Bostonyan Auto Group':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -119,7 +120,7 @@ if __name__ == '__main__':
             else:
                 pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
     elif key == 'Direct Auto Mecca':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -153,7 +154,7 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
     elif key == 'Fafama Auto Sales':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -187,7 +188,7 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
     elif key == 'Newton Automotive Sales':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -221,7 +222,7 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('PageNumber=[0-9]+', f'PageNumber={page_counter}', pagination_url)
     elif key == 'Blasius Boston':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -255,7 +256,7 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)   
     elif key == 'Avon Auto Brokers':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -289,7 +290,7 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  
     elif key == 'Johns Auto Sales':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -324,8 +325,7 @@ if __name__ == '__main__':
                 page_counter += 1
                 pagination_url = re.sub('page=[0-9]+', f'page={page_counter}', pagination_url)  
     elif key == 'J&M Automotive':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
-        print(days_since)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -359,10 +359,8 @@ if __name__ == '__main__':
 
                 page_counter += 1
                 pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)  
-############################
     elif key == 'CT Auto':
-        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
-        print(days_since)
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
 
         if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
             # Start with parsing the first inventory page
@@ -376,3 +374,4 @@ if __name__ == '__main__':
                 pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
             # No additional pages to parse
+############################
