@@ -7,10 +7,12 @@ MA:
 
 
 RI (1-2)
-* 
+* Done
 
 NH (1-2)
-* 
+* https://www.irwinzone.com/searchused.aspx
+* https://www.toystoreusedcars.com/newandusedcars?clearall=1
+
 
 NJ (2)
 * 

@@ -172,6 +172,17 @@ def parse_tag(soup, html_tag, html_class):
         
     return new_col_list
 
+# Parse a specific tag with a specific attribute
+def parse_class_attr(soup, html_tag, html_class, attribute_name):
+    dataColumn = soup.find_all(html_tag, class_=html_class)
+    new_col_list = []
+    
+    for i in range(0, len(dataColumn)):
+        new_col_list.append(dataColumn[i].attrs[attribute_name].strip())
+    
+    return new_col_list
+
+
 ##########################################
 # Other Misc Helper Functions for Parsing
 ##########################################

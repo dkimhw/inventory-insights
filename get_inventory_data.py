@@ -89,8 +89,18 @@ dealerships = {
         'zipcode': '06606',
         'city': 'Bridgeport',
         'state': 'CT'
-    }    
+    },
+    'Irwin Automotive Group': {
+        'url': 'https://www.irwinzone.com/searchused.aspx?pn=50',
+        'pagination_url': 'https://www.irwinzone.com/searchused.aspx?pn=50&pt=2',
+        'dealership_name': 'Irwin Automotive Group',
+        'address': '59 Bisson Avenue',
+        'zipcode': '03246',
+        'city': 'Laconia',
+        'state': 'NH'
+    }
 }
+
 
 if __name__ == '__main__':
   # Set scrapping parameters
@@ -375,3 +385,38 @@ if __name__ == '__main__':
 
             # No additional pages to parse
 ############################
+    elif key == 'Irwin Automotive Group':
+        days_since= pi.days_since_last_scrape(key, DB_NAME, PROD_TABLE)
+
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
+            # Start with parsing the first inventory page
+            response = requests.get(dealerships[key]['url'], headers = headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            data = parse_dealership.get_irwin_auto_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
+
+            # Parse out other pages if there are any available
+            pagination_url = dealerships[key]['pagination_url']
+            page_counter = 2
+
+            while (True):
+                response = requests.get(pagination_url, headers = headers)
+                soup_pagination = BeautifulSoup(response.text, "html.parser")   
+                title = pi.parse_class_attr(soup_pagination, 'div', 'row srpVehicle hasVehicleInfo', 'data-name')
+                
+                print(pagination_url)
+                if len(title) == 0:
+                    break
+                else:
+                    data = parse_dealership.get_irwin_auto_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
+
+                page_counter += 1
+                pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)  
