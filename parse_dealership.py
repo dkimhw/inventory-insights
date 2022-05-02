@@ -759,9 +759,7 @@ def get_irwin_auto_inventory_data(soup, dealership_info, url):
     )
 
     # Prices
-    car_prices = pi.convert_to_numeric_type(
-      pi.parse_class_attr(soup, 'div', 'row srpVehicle hasVehicleInfo', 'data-price')
-    )
+    car_prices = [int(float(i)) for i in pi.parse_class_attr(soup, 'div', 'row srpVehicle hasVehicleInfo', 'data-price')]
    
     # Misc car information
     exterior_color = pi.parse_class_attr(soup, 'div', 'row srpVehicle hasVehicleInfo', 'data-extcolor')

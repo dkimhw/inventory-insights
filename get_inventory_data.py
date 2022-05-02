@@ -152,6 +152,7 @@ if __name__ == '__main__':
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
                 title = pi.parse_subsection(soup_pagination, 'div', 'h2', 'ml-0 ml-lg-5 pt-4 pb-2 border-bottom', 'ebiz-vdp-title color m-0')
                 
+                print(pagination_url)
                 if len(title) == 0:
                     break
                 else:
@@ -186,6 +187,7 @@ if __name__ == '__main__':
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
                 title = pi.parse_subsection(soup_pagination, 'div', 'h2', 'ml-0 ml-lg-5 pt-4 pb-2 border-bottom', 'color m-0 ebiz-vdp-title')
                 
+                print(pagination_url)
                 if len(title) == 0:
                     break
                 else:
@@ -220,6 +222,7 @@ if __name__ == '__main__':
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
                 title = pi.parse_subsection(soup_pagination, 'div', 'h3', 'vehicle-snapshot__information', 'vehicle-snapshot__title')
                 
+                print(pagination_url)
                 if len(title) == 0:
                     break
                 else:
@@ -254,6 +257,7 @@ if __name__ == '__main__':
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
                 title = pi.clean_text_data(pi.parse_subsection(soup_pagination, 'div', 'div', 'vehicle', 'v-title', 'get_text'))
 
+                print(pagination_url)
                 if len(title) == 0:
                     break
                 else:
@@ -287,7 +291,8 @@ if __name__ == '__main__':
                 response = requests.get(pagination_url, headers = headers)
                 soup_pagination = BeautifulSoup(response.text, "html.parser")   
                 title = pi.parse_subsection_attr(soup_pagination, 'aria-label', 'div', 'a', 'i11r-vehicle')
-                
+                print(pagination_url)
+
                 if len(title) == 0:
                     break
                 else:
@@ -419,4 +424,4 @@ if __name__ == '__main__':
                         pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
 
                 page_counter += 1
-                pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)  
+                pagination_url = re.sub('pt=[0-9]+', f'pt={page_counter}', pagination_url)  
