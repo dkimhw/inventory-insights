@@ -3,7 +3,7 @@
 1. Script to move data in staging to production & wiping staging (Done)
 2. Build out data validations when parsing dealerships (Done)
     - If len of each data col is different it's not valid
-    - If not valid: 
+    - If not valid:
         - Do not append the data to inventory_staging
         - Add to a table in cars.db that logs what the error was
     - Else:
@@ -18,6 +18,7 @@
 ## Run Scripts in Order
 1. `python get_inventory_data.py`
 2. `python move_to_prod.py`
+
 
 ## Low-Hanging Questions:
 * Avg year that dealerships stock

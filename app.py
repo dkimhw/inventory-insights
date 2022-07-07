@@ -3,7 +3,7 @@ import dash
 from dash import dcc
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-import queries as q
+import services.query as q
 
 app = dash.Dash(__name__)
 
