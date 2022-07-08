@@ -1,10 +1,11 @@
 import query as q
+import pandas as pd
 # https://towardsdatascience.com/the-good-way-to-structure-a-python-project-d914f27dfcc9
 
 def query_inventory_data():
   '''
     Returns:
-      Average price of used cars of the current month
+      The full scarped used car inventory dataframe
   '''
   sql_query = """
     SELECT
@@ -16,10 +17,21 @@ def query_inventory_data():
 
 # print(query_inventory_data().head())
 
-
-def avg_price_month(month_year):
+"""
+  Returns:
+    Avg price of the last scraped month
+"""
+def avg_price_last_scraped_month():
   inv = query_inventory_data()
-  print(inv['scraped_date'][0])
+  inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
+
+  # Parse scraped date
+  last_scraped_date = max(inv['scraped_date'])
+  last_scraped_month = last_scraped_date.month
+  last_scraped_year = last_scraped_date.year
+
+  print(last_scraped_month)
+  print(inv.loc[(inv['scraped_date'].dt.month == last_scraped_month), ['vin', 'dealership_name', 'price', 'scraped_date']])
 
 
-avg_price_month('2022-01-01')
+avg_price_last_scraped_month()

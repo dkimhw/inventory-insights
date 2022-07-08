@@ -3,7 +3,7 @@ import dash
 from dash import dcc
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-import services.query as q
+import services.dash_app_data as d
 
 app = dash.Dash(__name__)
 
@@ -26,7 +26,7 @@ current_month_avg_inventory_price = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = q.avg_price_current_month()
+                value = d.avg_price_current_month()
             )
         ],
         'layout': go.Layout(
