@@ -1,6 +1,12 @@
-import query as q
 import pandas as pd
 # https://towardsdatascience.com/the-good-way-to-structure-a-python-project-d914f27dfcc9
+import sqlite3
+
+CONN = sqlite3.connect('./data/cars.db')
+
+def query(sql_query):
+  result = pd.read_sql_query(sql_query, CONN)
+  return result
 
 def query_inventory_data():
   '''
@@ -12,16 +18,14 @@ def query_inventory_data():
       *
     FROM inventory;
   """
-  result = q.query(sql_query)
+  result = query(sql_query)
   return result
 
-# print(query_inventory_data().head())
-
-"""
-  Returns:
-    Avg price of the last scraped month
-"""
 def avg_price_last_scraped_month():
+  """
+    Returns:
+      Avg price of the last scraped month
+  """
   inv = query_inventory_data()
   inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
 
@@ -30,8 +34,5 @@ def avg_price_last_scraped_month():
   last_scraped_month = last_scraped_date.month
   last_scraped_year = last_scraped_date.year
 
-  print(last_scraped_month)
-  print(inv.loc[(inv['scraped_date'].dt.month == last_scraped_month), ['vin', 'dealership_name', 'price', 'scraped_date']])
-
-
-avg_price_last_scraped_month()
+  return inv.loc[ (inv['scraped_date'].dt.month == last_scraped_month) & (inv['scraped_date'].dt.year == last_scraped_year)
+  , ['price']].mean()[0]
