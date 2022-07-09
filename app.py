@@ -5,6 +5,9 @@ from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import services.dash_app_data as d
 
+
+# print(d.query_inventory_data())
+
 app = dash.Dash(__name__)
 
 
@@ -26,7 +29,7 @@ current_month_avg_inventory_price = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_price_current_month()
+                value = d.avg_price_last_scraped_month()
             )
         ],
         'layout': go.Layout(
@@ -35,6 +38,13 @@ current_month_avg_inventory_price = dcc.Graph(
         )
     }
 )
+
+
+####################
+# Filterable Graphs
+####################
+
+
 
 
 
