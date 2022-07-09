@@ -36,3 +36,7 @@ def avg_price_last_scraped_month():
 
   return inv.loc[ (inv['scraped_date'].dt.month == last_scraped_month) & (inv['scraped_date'].dt.year == last_scraped_year)
   , ['price']].mean()[0]
+
+def manufacturer_bar_char_count():
+  inv = query_inventory_data()
+  return inv
