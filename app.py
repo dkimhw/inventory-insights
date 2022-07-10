@@ -59,7 +59,7 @@ app.layout = dash.html.Div([
     current_month_avg_inventory_price
 ])
 
-
+print(d.make_bar_char_count('2022-06-01', '2022-07-30'))
 
 
 
