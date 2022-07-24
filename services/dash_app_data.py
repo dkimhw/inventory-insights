@@ -21,6 +21,17 @@ def query_inventory_data():
     FROM inventory;
   """
   result = query(sql_query)
+
+  # Clean up data
+  result['scraped_date'] = pd.to_datetime(result['scraped_date'])
+
+  # For vehicles that there was no VIN data use title + scraped_month (Y-m) format as the key for count distincts
+  for i, row in result.iterrows():
+      if (not row['vin']):
+        scraped_month_year = row['scraped_date'].strftime('%Y-%m')
+        unique_id = row['title'] + ': ' + scraped_month_year
+        result.at[i, 'vin'] = unique_id
+
   return result
 
 def avg_price_last_scraped_month():
@@ -42,7 +53,7 @@ def avg_price_last_scraped_month():
   , ['price']].mean()[0]
 
 
-def make_bar_char_count(start_date, end_date):
+def make_count(start_date, end_date):
   """
     Calculates the number of cars by manufacturer
 
@@ -54,9 +65,6 @@ def make_bar_char_count(start_date, end_date):
 
   """
   inv = query_inventory_data()
-  print(inv.shape)
-  print(inv.vin.isnull().sum())
-  inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
   for i, row in inv.iterrows():
       new_val = row['scraped_date'].strftime('%Y-%m-%d')
       inv.at[i,'scraped_date'] = new_val
@@ -64,5 +72,4 @@ def make_bar_char_count(start_date, end_date):
   inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
 
   make_count = inv.groupby(['make'], as_index = False).vin.nunique()
-  print(make_count)
-  return inv
+  return make_count
