@@ -1,10 +1,11 @@
 
 import dash
-from dash import dcc
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import services.dash_app_data as d
 import plotly.express as px
+from dash import Dash, dcc, html, Input, Output
+from datetime import date
 
 # print(d.query_inventory_data())
 
@@ -66,19 +67,45 @@ make_bar_chart = dcc.Graph(
             title="Default: various text sizes, positions and angles")
 """
 
-count_of_makes_data = d.make_count('2022-06-01', '2022-07-30')
-make_bar_chart = dcc.Graph(
-    id = 'count_of_vehicles_by_makes',
-    figure = px.bar(count_of_makes_data, y='vin', x='make', text_auto='.2s', title="Count of Used Cars by Make Stocked by Dealerships")
-)
-
-
 ####################
 # Filterable Graphs
 ####################
 
+# Get data
+count_of_makes_data = d.make_count('2022-06-01', '2022-07-30')
+make_bar_chart = dcc.Graph(
+    id = 'count_of_vehicles_by_makes',
+    figure = px.bar(
+        count_of_makes_data,
+        y='vin',
+        x='make',
+        text_auto='.2s',
+        title="Count of Used Cars by Make Stocked by Dealerships",
+        labels={ # replaces default labels by column name
+            "vin": "Count of Vehicles", "make": "Make"
+        }
+    )
+)
 
+@app.callback(
+    Output('count_of_vehicles_by_makes', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_make_bar_chart (start_date, end_date):
+    makes_data = d.make_count(start_date, end_date)
+    fig = px.bar(
+        makes_data,
+        y='vin',
+        x='make',
+        text_auto='.2s',
+        title="Count of Used Cars by Make Stocked by Dealerships",
+        labels={ # replaces default labels by column name
+            "vin": "Count of Vehicles", "make": "Make"
+        }
+    )
 
+    return fig
 
 
 ####################
@@ -91,6 +118,13 @@ app.layout = dash.html.Div([
 
     current_month_avg_inventory_price,
 
+    dcc.DatePickerRange(
+        id='date-picker-range',
+        min_date_allowed=date(2022, 1, 1),
+        initial_visible_month=date(2022, 6, 1),
+        start_date= date(2022, 6, 1),
+        end_date=date(2022, 7, 31)
+    ),
     make_bar_chart
 ])
 

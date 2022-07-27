@@ -2,7 +2,7 @@ import pandas as pd
 # https://towardsdatascience.com/the-good-way-to-structure-a-python-project-d914f27dfcc9
 import sqlite3
 
-CONN = sqlite3.connect('./data/cars.db')
+CONN = sqlite3.connect('./data/cars.db', check_same_thread=False)
 
 def query(sql_query):
   result = pd.read_sql_query(sql_query, CONN)
