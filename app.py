@@ -6,10 +6,13 @@ import services.dash_app_data as d
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
 from datetime import date
+import dash_bootstrap_components as dbc
 
 # print(d.query_inventory_data())
 
-app = dash.Dash(__name__)
+app = dash.Dash(
+    external_stylesheets=[dbc.themes.COSMO]
+)
 
 
 ####################
@@ -21,10 +24,15 @@ app = dash.Dash(__name__)
 
 
 ####################
-# Static Graphs
+# Graphs
 ####################
 
-# Display avg car price based on last scraped month
+
+#########
+# Tiles
+#########
+
+# Creates a graph object that displays avg car price based on last scraped month
 current_month_avg_inventory_price = dcc.Graph(
     id = 'current_month_avg_inventory_price',
     figure = {
@@ -35,43 +43,66 @@ current_month_avg_inventory_price = dcc.Graph(
             )
         ],
         'layout': go.Layout(
-            title = 'Current Month Avg Inventory Price',
+            title = 'Avg Inventory Price',
             height = 250
         )
     }
 )
 
-# print(d.make_bar_char_count('2022-06-01', '2022-07-30'))
-# Static Bar Chart by Make
+#########
+# Avg Year
+#########
 
-"""
-make_bar_chart = dcc.Graph(
-    id = 'count_of_vehicles_by_makes',
+current_month_avg_inventory_make_year = dcc.Graph(
+    id = 'current_month_avg_inventory_make_year',
     figure = {
         'data': [
-            go.Bar(
-                x=list(count_of_makes_data['make']),
-                y=list(count_of_makes_data['vin'])
-                # x = count_of_makes_data['make'],
-                # y = count_of_makes_data['vin']
+            go.Indicator(
+                mode = "number",
+                value = d.avg_vehicle_year('2022-06-01', '2022-07-30')
             )
         ],
         'layout': go.Layout(
-            title = 'Count of Used Cars by Make Stocked by Dealerships',
+            title = 'Avg Inventory Make Year',
             height = 250
         )
     }
 )
 
-    fig = px.bar(df, y='pop', x='country', text_auto='.2s',
-            title="Default: various text sizes, positions and angles")
-"""
+@app.callback(
+    Output('current_month_avg_inventory_make_year', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_make_year_chart (start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
 
-####################
-# Filterable Graphs
-####################
+        Returns: Plotly graph object
+    """
+    print(d.avg_vehicle_year(start_date, end_date))
+    fig =  {
+            'data': [
+                go.Indicator(
+                    mode = "number",
+                    value = d.avg_vehicle_year(start_date, end_date)
+                )
+            ],
+            'layout': go.Layout(
+                title = 'Avg Inventory Make Year',
+                height = 250
+            )
+    }
 
-# Get data
+
+    return fig
+
+
+#########
+# Count of Makes Bar Chart
+#########
+
 count_of_makes_data = d.make_count('2022-06-01', '2022-07-30')
 make_bar_chart = dcc.Graph(
     id = 'count_of_vehicles_by_makes',
@@ -93,6 +124,12 @@ make_bar_chart = dcc.Graph(
     Input('date-picker-range', 'end_date')
 )
 def update_make_bar_chart (start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
     makes_data = d.make_count(start_date, end_date)
     fig = px.bar(
         makes_data,
@@ -114,17 +151,30 @@ def update_make_bar_chart (start_date, end_date):
 
 app.layout = dash.html.Div([
     # Overall fatal accidents and incidents trends
-    dash.html.H1("General Trends Between Time Periods", className="section-title"),
-
-    current_month_avg_inventory_price,
-
-    dcc.DatePickerRange(
-        id='date-picker-range',
-        min_date_allowed=date(2022, 1, 1),
-        initial_visible_month=date(2022, 6, 1),
-        start_date= date(2022, 6, 1),
-        end_date=date(2022, 7, 31)
+    dash.html.H1("Dealership Data Overview", className="section-title"),
+    dbc.Row(
+        dbc.Col(
+            dcc.DatePickerRange(
+                id='date-picker-range',
+                min_date_allowed=date(2022, 1, 1),
+                initial_visible_month=date(2022, 6, 1),
+                start_date= date(2022, 6, 1),
+                end_date=date(2022, 7, 31)
+            ),
+            width={"size": 6},
+        ), justify="center"
     ),
+    dbc.Row(
+        [
+            dbc.Col(html.Div(current_month_avg_inventory_price)),
+            dbc.Col(html.Div(current_month_avg_inventory_make_year)),
+            dbc.Col(html.Div("One of three columns")),
+        ], align="center"
+    ),
+
+
+
+
     make_bar_chart
 ])
 

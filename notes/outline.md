@@ -24,6 +24,8 @@
 * Avg year that dealerships stock
 * Avg miles that dealerships stock
 * Make distribution
+    * Count
+    * % of Total
 * Avg price that dealerships stock
 * Avg price per make that they stock
 * Price change over time
