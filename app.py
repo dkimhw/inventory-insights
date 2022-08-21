@@ -29,17 +29,18 @@ app = dash.Dash(
 
 
 #########
-# Tiles
+# Tile: Average Inventory Price
 #########
 
+
 # Creates a graph object that displays avg car price based on last scraped month
-current_month_avg_inventory_price = dcc.Graph(
-    id = 'current_month_avg_inventory_price',
+avg_inventory_price = dcc.Graph(
+    id = 'avg_inventory_price',
     figure = {
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_price_last_scraped_month()
+                value = d.avg_inventory_price('2022-06-01', '2022-07-30')
             )
         ],
         'layout': go.Layout(
@@ -49,12 +50,41 @@ current_month_avg_inventory_price = dcc.Graph(
     }
 )
 
+@app.callback(
+    Output('avg_inventory_price', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_price_indicator_chart (start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    print(d.avg_vehicle_year(start_date, end_date))
+    fig =  {
+            'data': [
+                go.Indicator(
+                    mode = "number",
+                    value = d.avg_inventory_price(start_date, end_date)
+                )
+            ],
+            'layout': go.Layout(
+                title = 'Average Inventory Price',
+                height = 250
+            )
+    }
+
+
+    return fig
+
 #########
 # Avg Year
 #########
 
-current_month_avg_inventory_make_year = dcc.Graph(
-    id = 'current_month_avg_inventory_make_year',
+avg_inventory_make_year = dcc.Graph(
+    id = 'avg_inventory_make_year',
     figure = {
         'data': [
             go.Indicator(
@@ -70,7 +100,7 @@ current_month_avg_inventory_make_year = dcc.Graph(
 )
 
 @app.callback(
-    Output('current_month_avg_inventory_make_year', 'figure'),
+    Output('avg_inventory_make_year', 'figure'),
     Input('date-picker-range', 'start_date'),
     Input('date-picker-range', 'end_date')
 )
@@ -90,7 +120,7 @@ def update_avg_make_year_chart (start_date, end_date):
                 )
             ],
             'layout': go.Layout(
-                title = 'Avg Inventory Make Year',
+                title = 'Average Inventory Make Year',
                 height = 250
             )
     }
@@ -166,14 +196,11 @@ app.layout = dash.html.Div([
     ),
     dbc.Row(
         [
-            dbc.Col(html.Div(current_month_avg_inventory_price)),
-            dbc.Col(html.Div(current_month_avg_inventory_make_year)),
+            dbc.Col(html.Div(avg_inventory_price)),
+            dbc.Col(html.Div(avg_inventory_make_year)),
             dbc.Col(html.Div("One of three columns")),
         ], align="center"
     ),
-
-
-
 
     make_bar_chart
 ])

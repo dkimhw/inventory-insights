@@ -53,6 +53,24 @@ def avg_price_last_scraped_month():
   , ['price']].mean()[0]
 
 
+def avg_inventory_price(start_date, end_date):
+  """
+    Calculates the average inventory price
+
+    start_date: start time value for filtering out the inventory data
+    end_date: end time value for filtering out the inventory data
+
+    Returns:
+      Avg inventory price based on input start date and end date
+  """
+  inv = query_inventory_data()
+  inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
+  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
+  inv['price'] = inv['price'].astype(str).astype(float)
+  return inv['price'].mean()
+
+
+
 def avg_vehicle_year(start_date, end_date):
   """
     Calculates the average vehicle year
