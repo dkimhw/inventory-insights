@@ -1,0 +1,14 @@
+
+/* Main Classes */
+
+.dashboard-body {
+  padding: 1rem;
+}
+
+.dashboard-title {
+  padding-bottom: .5rem;
+  border-bottom: 1.5px #636efa solid;
+}
+
+
+/* Utilities */

@@ -7,31 +7,29 @@ import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
 from datetime import date
 import dash_bootstrap_components as dbc
+import datetime
 
-# print(d.query_inventory_data())
 
 app = dash.Dash(
     external_stylesheets=[dbc.themes.COSMO]
 )
 
-
 ####################
-# Load Data
+# Starting Variables
 ####################
 
-
-
-
+end_date =  datetime.date.today()
+start_date = datetime.date(end_date.year, end_date.month - 1, 1).strftime("%Y-%m-%d")
+end_date = end_date.strftime("%Y-%m-%d")
 
 ####################
 # Graphs
 ####################
 
 
-#########
+###########################
 # Tile: Average Inventory Price
-#########
-
+###########################
 
 # Creates a graph object that displays avg car price based on last scraped month
 avg_inventory_price = dcc.Graph(
@@ -40,11 +38,11 @@ avg_inventory_price = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_inventory_price('2022-06-01', '2022-07-30')
+                value = d.avg_inventory_price(start_date, end_date)
             )
         ],
         'layout': go.Layout(
-            title = 'Avg Inventory Price',
+            title = 'Average Inventory Price',
             height = 250
         )
     }
@@ -72,16 +70,15 @@ def update_avg_price_indicator_chart (start_date, end_date):
             ],
             'layout': go.Layout(
                 title = 'Average Inventory Price',
-                height = 250
             )
     }
 
 
     return fig
 
-#########
-# Avg Year
-#########
+###########################
+# Tile: Average Inventory Year
+###########################
 
 avg_inventory_make_year = dcc.Graph(
     id = 'avg_inventory_make_year',
@@ -89,11 +86,11 @@ avg_inventory_make_year = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_vehicle_year('2022-06-01', '2022-07-30')
+                value = d.avg_vehicle_year(start_date, end_date)
             )
         ],
         'layout': go.Layout(
-            title = 'Avg Inventory Make Year',
+            title = 'Average Inventory Make Year',
             height = 250
         )
     }
@@ -106,8 +103,8 @@ avg_inventory_make_year = dcc.Graph(
 )
 def update_avg_make_year_chart (start_date, end_date):
     """
-       start_date: The start date chosen by the user via dash callback
-       end_dte: The end date chosen by the user via dash callback
+        start_date: The start date chosen by the user via dash callback
+        end_dte: The end date chosen by the user via dash callback
 
         Returns: Plotly graph object
     """
@@ -120,8 +117,7 @@ def update_avg_make_year_chart (start_date, end_date):
                 )
             ],
             'layout': go.Layout(
-                title = 'Average Inventory Make Year',
-                height = 250
+                title = 'Average Inventory Make Year'
             )
     }
 
@@ -129,15 +125,61 @@ def update_avg_make_year_chart (start_date, end_date):
     return fig
 
 
-#########
-# Count of Makes Bar Chart
-#########
+###########################
+# Tile: Average Inventory Mileage
+###########################
 
-count_of_makes_data = d.make_count('2022-06-01', '2022-07-30')
+avg_inventory_mileage = dcc.Graph(
+    id = 'avg_inventory_mileage',
+    figure = {
+        'data': [
+            go.Indicator(
+                mode = "number",
+                value = d.avg_vehicle_mileage(start_date, end_date)
+            )
+        ],
+        'layout': go.Layout(
+            title = 'Average Inventory Mileage',
+            height = 250
+        )
+    }
+)
+
+@app.callback(
+    Output('avg_inventory_mileage', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_inventory_mileage (start_date, end_date):
+    """
+        start_date: The start date chosen by the user via dash callback
+        end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    print(d.avg_vehicle_year(start_date, end_date))
+    fig =  {
+            'data': [
+                go.Indicator(
+                    mode = "number",
+                    value = d.avg_vehicle_mileage(start_date, end_date)
+                )
+            ],
+            'layout': go.Layout(
+                title = 'Average Inventory Mileage'
+            )
+    }
+    return fig
+
+
+#########################
+# Count of Makes Bar Chart
+#########################
+
 make_bar_chart = dcc.Graph(
     id = 'count_of_vehicles_by_makes',
     figure = px.bar(
-        count_of_makes_data,
+        d.make_count(start_date, end_date),
         y='vin',
         x='make',
         text_auto='.2s',
@@ -181,33 +223,29 @@ def update_make_bar_chart (start_date, end_date):
 
 app.layout = dash.html.Div([
     # Overall fatal accidents and incidents trends
-    dash.html.H1("Dealership Data Overview", className="section-title"),
+    dash.html.H1("Dealership Data Overview", className="dashboard-title mb-4"),
     dbc.Row(
         dbc.Col(
             dcc.DatePickerRange(
                 id='date-picker-range',
                 min_date_allowed=date(2022, 1, 1),
-                initial_visible_month=date(2022, 6, 1),
-                start_date= date(2022, 6, 1),
-                end_date=date(2022, 7, 31)
+                initial_visible_month=start_date,
+                start_date=start_date,
+                end_date=end_date
             ),
             width={"size": 6},
-        ), justify="center"
+        ), justify="flex-start", className="mb-2"
     ),
     dbc.Row(
         [
-            dbc.Col(html.Div(avg_inventory_price)),
-            dbc.Col(html.Div(avg_inventory_make_year)),
-            dbc.Col(html.Div("One of three columns")),
-        ], align="center"
+            dbc.Col(html.Div(avg_inventory_price), width={'size': 4}),
+            dbc.Col(html.Div(avg_inventory_make_year), width={'size': 4}),
+            dbc.Col(html.Div(avg_inventory_mileage), width={'size': 4}),
+        ], align="center", justify="center"
     ),
 
     make_bar_chart
-])
-
-
-
-
+], className="dashboard-body")
 
 
 

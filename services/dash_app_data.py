@@ -21,9 +21,7 @@ def query_inventory_data():
     FROM inventory;
   """
   result = query(sql_query)
-
-  # Clean up data
-  result['scraped_date'] = pd.to_datetime(result['scraped_date'])
+  result['scraped_date'] = pd.to_datetime(result['scraped_date'], format='%Y-%m-%d')
 
   # For vehicles that there was no VIN data use title + scraped_month (Y-m) format as the key for count distincts
   for i, row in result.iterrows():
@@ -33,24 +31,6 @@ def query_inventory_data():
         result.at[i, 'vin'] = unique_id
 
   return result
-
-def avg_price_last_scraped_month():
-  """
-    Calculates the average price based on last scraped month
-
-    Returns:
-      Avg price of the last scraped month
-  """
-  inv = query_inventory_data()
-  inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
-
-  # Parse scraped date
-  last_scraped_date = max(inv['scraped_date'])
-  last_scraped_month = last_scraped_date.month
-  last_scraped_year = last_scraped_date.year
-
-  return inv.loc[ (inv['scraped_date'].dt.month == last_scraped_month) & (inv['scraped_date'].dt.year == last_scraped_year)
-  , ['price']].mean()[0]
 
 
 def avg_inventory_price(start_date, end_date):
@@ -64,7 +44,6 @@ def avg_inventory_price(start_date, end_date):
       Avg inventory price based on input start date and end date
   """
   inv = query_inventory_data()
-  inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
   inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
   inv['price'] = inv['price'].astype(str).astype(float)
   return inv['price'].mean()
@@ -82,11 +61,26 @@ def avg_vehicle_year(start_date, end_date):
       Avg vehicle year based on input start date and end date
   """
   inv = query_inventory_data()
-  inv['scraped_date'] = pd.to_datetime(inv['scraped_date'])
   inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
   inv['year'] = inv['year'].astype(str).astype(int)
 
   return inv['year'].mean()
+
+def avg_vehicle_mileage(start_date, end_date):
+  """
+    Calculates the average vehicle mileage
+
+    start_date: start time value for filtering out the inventory data
+    end_date: end time value for filtering out the inventory data
+
+    Returns:
+      Avg vehicle mileage based on input start date and end date
+  """
+  inv = query_inventory_data()
+  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
+  inv['vehicle_mileage'] = inv['vehicle_mileage'].astype(str).astype(float)
+
+  return inv['vehicle_mileage'].mean()
 
 def make_count(start_date, end_date):
   """
