@@ -1,6 +1,7 @@
 import pandas as pd
 # https://towardsdatascience.com/the-good-way-to-structure-a-python-project-d914f27dfcc9
 import sqlite3
+import datetime
 
 CONN = sqlite3.connect('./data/cars.db', check_same_thread=False)
 
@@ -102,3 +103,25 @@ def make_count(start_date, end_date):
 
   make_count = inv.groupby(['make'], as_index = False).vin.nunique()
   return make_count
+
+def avg_price_by_month(start_date, end_date):
+  """
+    Calculates the average price by month
+
+    start_date: specify the start time period for filtering out the inventory data for calculating the average price by month
+    end_date: specify the end time period for filtering out the inventory data for calculating the average price by month
+    returns:
+      DataFrame with two columns - month & average price
+  """
+  inv = query_inventory_data()
+  inv['inventory_month'] = pd.to_datetime(inv['scraped_date'])
+  for i, row in inv.iterrows():
+      #new_datetime_obj = datetime.strptime(row['scraped_date'], '%Y-%m-%d')
+      new_val = datetime.date(row['scraped_date'].year, row['scraped_date'].month, 1).strftime('%Y-%m-%d')
+      inv.at[i,'inventory_month'] = new_val
+
+
+  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
+  avg_price_by_month = inv.groupby(['inventory_month'], as_index = False).price.mean()
+  avg_price_by_month.sort_values(by="inventory_month", ascending = False, inplace=True)
+  return avg_price_by_month

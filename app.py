@@ -14,6 +14,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.COSMO]
 )
 
+
 ####################
 # Starting Variables
 ####################
@@ -24,6 +25,10 @@ end_date = end_date.strftime("%Y-%m-%d")
 
 indicator_chart_height = 200
 indicator_font_size = 32
+
+
+print(d.avg_price_by_month(start_date, end_date))
+
 
 ####################
 # Graphs
@@ -223,6 +228,48 @@ def update_make_bar_chart (start_date, end_date):
 
     return fig
 
+#########################
+# Avg Price by Month Line Chart
+#########################
+
+avg_price_line_chart = dcc.Graph(
+    id = 'avg_price_by_month_line_chart',
+    figure = px.line(
+        d.avg_price_by_month('2022-01-01', end_date),
+        x='inventory_month',
+        y='price',
+        title="Count of Used Cars by Make Stocked by Dealerships",
+        # labels={ # replaces default labels by column name
+        #     "vin": "Count of Vehicles", "make": "Make"
+        # }
+    )
+)
+
+@app.callback(
+    Output('avg_price_by_month_line_chart', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_price_line_chart(start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    line_chart_data = d.avg_price_by_month(start_date, end_date)
+    fig = px.line(
+        line_chart_data,
+        x='inventory_month',
+        y='price',
+        title="Count of Used Cars by Make Stocked by Dealerships",
+        # labels={ # replaces default labels by column name
+        #     "vin": "Count of Vehicles", "make": "Make"
+        # }
+    )
+
+    return fig
+
 
 ####################
 ## Main Layout
@@ -259,7 +306,8 @@ app.layout = dash.html.Div([
             ], className="indicator-chart-section"
         ),
 
-        make_bar_chart
+        make_bar_chart,
+        avg_price_line_chart
     ], className="dashboard-body")
 
 ])
