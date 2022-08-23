@@ -22,6 +22,9 @@ end_date =  datetime.date.today()
 start_date = datetime.date(end_date.year, end_date.month - 1, 1).strftime("%Y-%m-%d")
 end_date = end_date.strftime("%Y-%m-%d")
 
+indicator_chart_height = 200
+indicator_font_size = 32
+
 ####################
 # Graphs
 ####################
@@ -38,12 +41,13 @@ avg_inventory_price = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_inventory_price(start_date, end_date)
+                value = d.avg_inventory_price(start_date, end_date),
+                number={"font":{"size": indicator_font_size}},
             )
         ],
         'layout': go.Layout(
             title = 'Average Inventory Price',
-            height = 250
+            height = indicator_chart_height,
         )
     }
 )
@@ -60,12 +64,12 @@ def update_avg_price_indicator_chart (start_date, end_date):
 
         Returns: Plotly graph object
     """
-    print(d.avg_vehicle_year(start_date, end_date))
     fig =  {
             'data': [
                 go.Indicator(
                     mode = "number",
-                    value = d.avg_inventory_price(start_date, end_date)
+                    value = d.avg_inventory_price(start_date, end_date),
+                    number={"font":{"size": indicator_font_size}},
                 )
             ],
             'layout': go.Layout(
@@ -86,12 +90,13 @@ avg_inventory_make_year = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_vehicle_year(start_date, end_date)
+                value = d.avg_vehicle_year(start_date, end_date),
+                number={"font":{"size": indicator_font_size}},
             )
         ],
         'layout': go.Layout(
             title = 'Average Inventory Make Year',
-            height = 250
+            height = indicator_chart_height
         )
     }
 )
@@ -108,16 +113,17 @@ def update_avg_make_year_chart (start_date, end_date):
 
         Returns: Plotly graph object
     """
-    print(d.avg_vehicle_year(start_date, end_date))
     fig =  {
             'data': [
                 go.Indicator(
                     mode = "number",
-                    value = d.avg_vehicle_year(start_date, end_date)
+                    value = d.avg_vehicle_year(start_date, end_date),
+                    number={"font":{"size": indicator_font_size}},
                 )
             ],
             'layout': go.Layout(
-                title = 'Average Inventory Make Year'
+                title = 'Average Inventory Make Year',
+                height = indicator_chart_height
             )
     }
 
@@ -135,12 +141,13 @@ avg_inventory_mileage = dcc.Graph(
         'data': [
             go.Indicator(
                 mode = "number",
-                value = d.avg_vehicle_mileage(start_date, end_date)
+                value = d.avg_vehicle_mileage(start_date, end_date),
+                number={"font":{"size": indicator_font_size}},
             )
         ],
         'layout': go.Layout(
             title = 'Average Inventory Mileage',
-            height = 250
+            height = indicator_chart_height
         )
     }
 )
@@ -157,12 +164,12 @@ def update_avg_inventory_mileage (start_date, end_date):
 
         Returns: Plotly graph object
     """
-    print(d.avg_vehicle_year(start_date, end_date))
     fig =  {
             'data': [
                 go.Indicator(
                     mode = "number",
-                    value = d.avg_vehicle_mileage(start_date, end_date)
+                    value = d.avg_vehicle_mileage(start_date, end_date),
+                    number={"font":{"size": indicator_font_size}},
                 )
             ],
             'layout': go.Layout(
@@ -222,30 +229,40 @@ def update_make_bar_chart (start_date, end_date):
 ####################
 
 app.layout = dash.html.Div([
-    # Overall fatal accidents and incidents trends
-    dash.html.H1("Dealership Data Overview", className="dashboard-title mb-4"),
-    dbc.Row(
-        dbc.Col(
-            dcc.DatePickerRange(
-                id='date-picker-range',
-                min_date_allowed=date(2022, 1, 1),
-                initial_visible_month=start_date,
-                start_date=start_date,
-                end_date=end_date
-            ),
-            width={"size": 6},
-        ), justify="flex-start", className="mb-2"
-    ),
-    dbc.Row(
-        [
-            dbc.Col(html.Div(avg_inventory_price), width={'size': 4}),
-            dbc.Col(html.Div(avg_inventory_make_year), width={'size': 4}),
-            dbc.Col(html.Div(avg_inventory_mileage), width={'size': 4}),
-        ], align="center", justify="center"
-    ),
 
-    make_bar_chart
-], className="dashboard-body")
+    # Navbar
+    dash.html.Div([
+        dash.html.H1("Inventory Dashboard", className="dashboard-title")
+    ], className="navbar"),
+
+    # Dashboard body
+    dash.html.Div([
+        # Filter section
+        dbc.Row(
+            dbc.Col(
+                dcc.DatePickerRange(
+                    id='date-picker-range',
+                    min_date_allowed=date(2022, 1, 1),
+                    initial_visible_month=start_date,
+                    start_date=start_date,
+                    end_date=end_date
+                ),
+                width={"size": 6},
+            ), justify="flex-start", className="dashboard-filter-section"
+        ),
+
+        dash.html.Div(
+            [
+                dash.html.Div(avg_inventory_price, className="indicator-chart"),
+                dash.html.Div(avg_inventory_make_year, className="indicator-chart"),
+                dash.html.Div(avg_inventory_mileage, className="indicator-chart"),
+            ], className="indicator-chart-section"
+        ),
+
+        make_bar_chart
+    ], className="dashboard-body")
+
+])
 
 
 

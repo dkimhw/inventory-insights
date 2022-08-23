@@ -1,13 +1,53 @@
 
-/* Main Classes */
+/* Dashboard Body */
 
 .dashboard-body {
-  padding: 1rem;
+  padding: 0;
+  width: 95%;
+  margin: 0 auto;
 }
 
 .dashboard-title {
-  padding-bottom: .5rem;
-  border-bottom: 1.5px #636efa solid;
+  padding: 0;
+  font-size: 2rem;
+  letter-spacing: 1.25px;
+}
+
+/* Navbar */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1.25px #636efa solid;
+  font-size: 1.5rem;
+  padding: .75rem 0 .75rem 1.25rem;
+}
+
+
+/* Indicator Charts */
+
+.indicator-chart-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+}
+
+.indicator-chart {
+  box-shadow: 0px 1.5px 7px 0px rgba(0,0,0,0.15);
+  margin: 1rem;
+  width: 100%;
+}
+
+
+/* Dashboard Filters */
+
+.dashboard-filter-section {
+  display: flex;
+  margin-top: 1rem;
+  padding: .75rem 0;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 
