@@ -21,13 +21,10 @@
 
 
 ## Low-Hanging Questions:
-* Avg year that dealerships stock
-* Avg miles that dealerships stock
-* Make distribution
-    * Count
-    * % of Total
-* Avg price that dealerships stock
-* Avg price per make that they stock
+* Avg year that dealerships stock (Done)
+* Avg miles that dealerships stock (Done)
+* Avg price that dealerships stock (Done)
+* Make distribution Bar Graph - Count (Done)
 * Price change over time
 * Make distribution change over time
 * Total inventory over time
@@ -36,6 +33,17 @@
     * Because the types of inventory varies depending on the size of the dealership right
     * I guess if I had a better cluster of dealerships sizes and samples
 * % of transmission difference
+
+Tables:
+ * Make
+    * Avg price
+    * Count
+    * % of total
+    * Avg year
+    * Avg mileage
+    * Count of different models
+ * Most popular year + make + model stocked
+
 
 
 ## Harder Questions

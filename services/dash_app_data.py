@@ -1,6 +1,7 @@
 import pandas as pd
 # https://towardsdatascience.com/the-good-way-to-structure-a-python-project-d914f27dfcc9
 import sqlite3
+import datetime
 
 CONN = sqlite3.connect('./data/cars.db', check_same_thread=False)
 
@@ -15,12 +16,21 @@ def query_inventory_data():
     Returns:
       The full scarped used car inventory dataframe
   '''
+
+  # It is possible to have multiple same vin in a month (e.g. we scraped it multiple times during the same month)
+  # For this dashboard we want to make sure we are only counting one vehicle per month. The reason is imagine we had only 3 cars in the dataset. If two of those were the same vin for the same month - the average we take would be biased towards that particular vin.
+  # Example vin: 19UDE2F70KA002008
   sql_query = """
+    with inventory_data as (
     SELECT
       *
-    FROM inventory;
+      , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
+    FROM inventory
+    )
+    select * from inventory_data where filter_row = 1;
   """
   result = query(sql_query)
+  # 19UDE2F70KA002008
   result['scraped_date'] = pd.to_datetime(result['scraped_date'], format='%Y-%m-%d')
 
   # For vehicles that there was no VIN data use title + scraped_month (Y-m) format as the key for count distincts
@@ -102,3 +112,25 @@ def make_count(start_date, end_date):
 
   make_count = inv.groupby(['make'], as_index = False).vin.nunique()
   return make_count
+
+def avg_price_by_month(start_date, end_date):
+  """
+    Calculates the average price by month
+
+    start_date: specify the start time period for filtering out the inventory data for calculating the average price by month
+    end_date: specify the end time period for filtering out the inventory data for calculating the average price by month
+    returns:
+      DataFrame with two columns - month & average price
+  """
+  inv = query_inventory_data()
+  inv['inventory_month'] = pd.to_datetime(inv['scraped_date'])
+  for i, row in inv.iterrows():
+      #new_datetime_obj = datetime.strptime(row['scraped_date'], '%Y-%m-%d')
+      new_val = datetime.date(row['scraped_date'].year, row['scraped_date'].month, 1).strftime('%Y-%m-%d')
+      inv.at[i,'inventory_month'] = new_val
+
+
+  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
+  avg_price_by_month = inv.groupby(['inventory_month'], as_index = False).price.mean()
+  avg_price_by_month.sort_values(by="inventory_month", ascending = False, inplace=True)
+  return avg_price_by_month
