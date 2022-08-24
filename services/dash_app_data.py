@@ -16,12 +16,21 @@ def query_inventory_data():
     Returns:
       The full scarped used car inventory dataframe
   '''
+
+  # It is possible to have multiple same vin in a month (e.g. we scraped it multiple times during the same month)
+  # For this dashboard we want to make sure we are only counting one vehicle per month. The reason is imagine we had only 3 cars in the dataset. If two of those were the same vin for the same month - the average we take would be biased towards that particular vin.
+  # Example vin: 19UDE2F70KA002008
   sql_query = """
+    with inventory_data as (
     SELECT
       *
-    FROM inventory;
+      , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
+    FROM inventory
+    )
+    select * from inventory_data where filter_row = 1;
   """
   result = query(sql_query)
+  # 19UDE2F70KA002008
   result['scraped_date'] = pd.to_datetime(result['scraped_date'], format='%Y-%m-%d')
 
   # For vehicles that there was no VIN data use title + scraped_month (Y-m) format as the key for count distincts

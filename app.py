@@ -20,14 +20,11 @@ app = dash.Dash(
 ####################
 
 end_date =  datetime.date.today()
-start_date = datetime.date(end_date.year, end_date.month - 1, 1).strftime("%Y-%m-%d")
+start_date = datetime.date(end_date.year, end_date.month - 5, 1).strftime("%Y-%m-%d")
 end_date = end_date.strftime("%Y-%m-%d")
 
 indicator_chart_height = 200
 indicator_font_size = 32
-
-
-print(d.avg_price_by_month(start_date, end_date))
 
 
 ####################
@@ -238,10 +235,10 @@ avg_price_line_chart = dcc.Graph(
         d.avg_price_by_month('2022-01-01', end_date),
         x='inventory_month',
         y='price',
-        title="Count of Used Cars by Make Stocked by Dealerships",
-        # labels={ # replaces default labels by column name
-        #     "vin": "Count of Vehicles", "make": "Make"
-        # }
+        title="Average Inventory Price by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "price": "Avg Inventory Price"
+        }
     )
 )
 
@@ -262,10 +259,10 @@ def update_avg_price_line_chart(start_date, end_date):
         line_chart_data,
         x='inventory_month',
         y='price',
-        title="Count of Used Cars by Make Stocked by Dealerships",
-        # labels={ # replaces default labels by column name
-        #     "vin": "Count of Vehicles", "make": "Make"
-        # }
+        title="Average Inventory Price by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "price": "Avg Inventory Price"
+        }
     )
 
     return fig
