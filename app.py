@@ -267,6 +267,49 @@ def update_avg_price_line_chart(start_date, end_date):
 
     return fig
 
+#########################
+# Avg Delaership Inventory Size by Month Line Chart
+#########################
+
+avg_dealership_inventory_size_by_month_line_chart = dcc.Graph(
+    id = 'avg_dealership_inventory_size_by_month_line_chart',
+    figure = px.line(
+        d.avg_dealership_inventory_size_by_month('2022-01-01', end_date),
+        x='inventory_month',
+        y='inventory_size',
+        title="Average Dealership Inventory Size by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "inventory_size": "Average Inventory Size per Dealership"
+        }
+    )
+)
+
+@app.callback(
+    Output('avg_dealership_inventory_size_by_month_line_chart', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_dealership_inventory_size_line_chart(start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    line_chart_data = d.avg_dealership_inventory_size_by_month(start_date, end_date)
+    fig = px.line(
+        line_chart_data,
+        x='inventory_month',
+        y='inventory_size',
+        title="Average Dealership Inventory Size by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "inventory_size": "Average Inventory Size per Dealership"
+        }
+    )
+
+    return fig
+
+
 
 ####################
 ## Main Layout
@@ -304,7 +347,8 @@ app.layout = dash.html.Div([
         ),
 
         make_bar_chart,
-        avg_price_line_chart
+        avg_price_line_chart,
+        avg_dealership_inventory_size_by_month_line_chart
     ], className="dashboard-body")
 
 ])

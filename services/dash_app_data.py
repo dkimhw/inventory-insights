@@ -134,3 +134,31 @@ def avg_price_by_month(start_date, end_date):
   avg_price_by_month = inv.groupby(['inventory_month'], as_index = False).price.mean()
   avg_price_by_month.sort_values(by="inventory_month", ascending = False, inplace=True)
   return avg_price_by_month
+
+def avg_dealership_inventory_size_by_month(start_date, end_date):
+  """
+    Calculates the average inventory size by month
+
+    start_date: specify the start time period for filtering out the inventory data for calculating the average inventory size by month
+    end_date: specify the end time period for filtering out the inventory data for calculating the average inventory size by month
+    returns:
+      DataFrame with two columns - month & average inventory size
+  """
+  inv = query_inventory_data()
+  inv['inventory_month'] = pd.to_datetime(inv['scraped_date'])
+  for i, row in inv.iterrows():
+      #new_datetime_obj = datetime.strptime(row['scraped_date'], '%Y-%m-%d')
+      new_val = datetime.date(row['scraped_date'].year, row['scraped_date'].month, 1).strftime('%Y-%m-%d')
+      inv.at[i,'inventory_month'] = new_val
+
+
+  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
+
+  avg_inv_size_by_month = inv.groupby(['inventory_month'], as_index = False).agg({
+    'vin': pd.Series.nunique
+    , 'dealership_name': pd.Series.nunique
+  })
+
+  avg_inv_size_by_month['inventory_size'] = round(avg_inv_size_by_month['vin'] / avg_inv_size_by_month['dealership_name'], 0)
+  avg_inv_size_by_month.sort_values(by="inventory_month", ascending = False, inplace=True)
+  return avg_inv_size_by_month.loc[:, ['inventory_month', 'inventory_size']]
