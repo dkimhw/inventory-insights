@@ -20,7 +20,7 @@
 2. `python move_to_prod.py`
 
 
-## Low-Hanging Questions:
+## Bas Dashboard:
 * Avg year that dealerships stock (Done)
 * Avg miles that dealerships stock (Done)
 * Avg price that dealerships stock (Done)
@@ -41,10 +41,14 @@ Tables:
  * Most popular year + make + model stocked
 
 
+## Detailed drilldown of each make - I think this should be another web page correct?
+* Create new page
+* Think of new graphs
+
+
 ## Harder Questions
 * Avg length to sale
 * Pick a car and see price that they are charging
-* Detailed drilldown of each make - I think this should be another web page correct?
 
 
 ## Documentation
