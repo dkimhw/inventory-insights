@@ -27,14 +27,14 @@ indicator_chart_height = 200
 indicator_font_size = 32
 
 
-####################
+##################################################
 # Graphs
-####################
+##################################################
 
 
-###########################
+##################################################
 # Tile: Average Inventory Price
-###########################
+##################################################
 
 # Creates a graph object that displays avg car price based on last scraped month
 avg_inventory_price = dcc.Graph(
@@ -82,9 +82,9 @@ def update_avg_price_indicator_chart (start_date, end_date):
 
     return fig
 
-###########################
+##################################################
 # Tile: Average Inventory Year
-###########################
+##################################################
 
 avg_inventory_make_year = dcc.Graph(
     id = 'avg_inventory_make_year',
@@ -133,9 +133,9 @@ def update_avg_make_year_chart (start_date, end_date):
     return fig
 
 
-###########################
+##################################################
 # Tile: Average Inventory Mileage
-###########################
+##################################################
 
 avg_inventory_mileage = dcc.Graph(
     id = 'avg_inventory_mileage',
@@ -181,9 +181,9 @@ def update_avg_inventory_mileage (start_date, end_date):
     return fig
 
 
-#########################
+##################################################
 # Count of Makes Bar Chart
-#########################
+##################################################
 
 make_bar_chart = dcc.Graph(
     id = 'count_of_vehicles_by_makes',
@@ -217,7 +217,7 @@ def update_make_bar_chart (start_date, end_date):
         y='vin',
         x='make',
         text_auto='.2s',
-        title="Count of Used Cars by Make Stocked by Dealerships",
+        title="Count of Used Cars by Make",
         labels={ # replaces default labels by column name
             "vin": "Count of Vehicles", "make": "Make"
         }
@@ -225,9 +225,9 @@ def update_make_bar_chart (start_date, end_date):
 
     return fig
 
-#########################
+##################################################
 # Avg Price by Month Line Chart
-#########################
+##################################################
 
 avg_price_line_chart = dcc.Graph(
     id = 'avg_price_by_month_line_chart',
@@ -267,6 +267,93 @@ def update_avg_price_line_chart(start_date, end_date):
 
     return fig
 
+##################################################
+# Avg Delaership Inventory Size by Month Line Chart
+##################################################
+
+avg_dealership_inventory_size_by_month_line_chart = dcc.Graph(
+    id = 'avg_dealership_inventory_size_by_month_line_chart',
+    figure = px.line(
+        d.avg_dealership_inventory_size_by_month('2022-01-01', end_date),
+        x='inventory_month',
+        y='inventory_size',
+        title="Average Dealership Inventory Size by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "inventory_size": "Average Inventory Size per Dealership"
+        }
+    )
+)
+
+@app.callback(
+    Output('avg_dealership_inventory_size_by_month_line_chart', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_dealership_inventory_size_line_chart(start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    line_chart_data = d.avg_dealership_inventory_size_by_month(start_date, end_date)
+    fig = px.line(
+        line_chart_data,
+        x='inventory_month',
+        y='inventory_size',
+        title="Average Dealership Inventory Size by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "inventory_size": "Average Inventory Size per Dealership"
+        }
+    )
+
+    return fig
+
+##################################################
+# Count of Makes by Month Line Chart
+##################################################
+
+make_month_line_chart = dcc.Graph(
+    id = 'count_of_vehicles_by_makes_and_month',
+    figure = px.line(
+        d.make_count_by_month(start_date, end_date),
+        y='vin',
+        x='inventory_month',
+        color="make",
+        title="Count of Used Cars by Inventory Month & Make (Top 10 Makes Only)",
+        labels={ # replaces default labels by column name
+            "vin": "Count of Vehicles", "inventory_month": "Inventory Month"
+        }
+    )
+)
+
+@app.callback(
+    Output('count_of_vehicles_by_makes_and_month', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_make_month_line_chart(start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+       Returns: Plotly graph object
+    """
+    make_month_data = d.make_count_by_month(start_date, end_date)
+    fig = px.line(
+        make_month_data,
+        y='vin',
+        x='inventory_month',
+        color="make",
+        title="Count of Used Cars by Inventory Month & Make (Top 10 Makes Only)",
+        labels={ # replaces default labels by column name
+            "vin": "Count of Vehicles", "inventory_month": "Inventory Month"
+        }
+    )
+
+    return fig
+
+
 
 ####################
 ## Main Layout
@@ -304,7 +391,9 @@ app.layout = dash.html.Div([
         ),
 
         make_bar_chart,
-        avg_price_line_chart
+        avg_price_line_chart,
+        avg_dealership_inventory_size_by_month_line_chart,
+        make_month_line_chart
     ], className="dashboard-body")
 
 ])

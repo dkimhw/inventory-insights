@@ -20,18 +20,14 @@
 2. `python move_to_prod.py`
 
 
-## Low-Hanging Questions:
+## Bas Dashboard:
 * Avg year that dealerships stock (Done)
 * Avg miles that dealerships stock (Done)
 * Avg price that dealerships stock (Done)
 * Make distribution Bar Graph - Count (Done)
-* Price change over time
+* Price change over time - line chart (Done)
+* Avg monthly inventory per dealership time trend (Done)
 * Make distribution change over time
-* Total inventory over time
-* Avg inventory on hand
-    * Not sure if this one is super helpful
-    * Because the types of inventory varies depending on the size of the dealership right
-    * I guess if I had a better cluster of dealerships sizes and samples
 * % of transmission difference
 
 Tables:
@@ -45,7 +41,16 @@ Tables:
  * Most popular year + make + model stocked
 
 
+## Detailed drilldown of each make - I think this should be another web page correct?
+* Create new page
+* Think of new graphs
+
 
 ## Harder Questions
 * Avg length to sale
 * Pick a car and see price that they are charging
+
+
+## Documentation
+* Dataset description in readme and dashboard
+* Better read me
