@@ -1,5 +1,8 @@
 
 /* Dashboard Body */
+body {
+  font-family: 'Roboto', sans-serif;
+}
 
 .dashboard-body {
   padding: 0;
@@ -13,14 +16,13 @@
   letter-spacing: 1.25px;
 }
 
-/* Navbar */
-
-.navbar {
+.dashboard-title-section {
   display: flex;
   align-items: center;
-  border-bottom: 1.25px #636efa solid;
-  font-size: 1.5rem;
+  /* border-bottom: 1.25px #636efa solid; */
+  font-size: 1.25rem;
   padding: .75rem 0 .75rem 1.25rem;
+  margin-top: 1rem;
 }
 
 
@@ -47,11 +49,31 @@
 
 .dashboard-filter-section {
   display: flex;
-  margin-top: 1rem;
   padding: .75rem 0;
   align-items: center;
   justify-content: flex-start;
 }
 
+
+/* Navbar */
+
+.navbar-brand-styles {
+  letter-spacing: 2px;
+  padding: 1rem;
+  font-size: 1.4rem;
+  background-color: #1C3879 !important;
+}
+
+.navbar-links-styles {
+  font-size: .9rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  transition: all .1s linear;
+}
+
+.navbar-links-styles:hover {
+  padding-bottom: .25rem;
+  border-bottom: 1px solid #fff;
+}
 
 /* Utilities */
