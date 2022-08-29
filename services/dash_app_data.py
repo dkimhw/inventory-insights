@@ -223,12 +223,51 @@ def transmission_type_count(start_date, end_date):
         scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
     )
     select
-      *
+      transmission
+      , count(distinct vin) as count_of_vehicles
     from
       inventory_data
     where
-      filter_row = 1;
+      filter_row = 1
+    group by
+      1;
   """
   result = query(sql_query)
-  transmission_cnt = result.groupby(['transmission'], as_index = False).vin.nunique()
-  return transmission_cnt
+  return result
+
+
+def vehicle_year_count(start_date, end_date):
+  '''
+    Calculates the number of cars by vehicle year
+
+    start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
+    end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+
+    returns:
+      DataFrame with two columns - year & count of cars
+  '''
+  sql_query = f"""
+    with inventory_data as (
+      SELECT
+        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start_month')) as vin
+        , year
+        , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
+      FROM
+        inventory
+      WHERE
+        scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    )
+    select
+      year,
+      count(distinct vin) as count_of_vehicles
+    from
+      inventory_data
+    where
+      filter_row = 1
+    group by
+      year
+    order by
+      year DESC;
+  """
+  result = query(sql_query)
+  return result

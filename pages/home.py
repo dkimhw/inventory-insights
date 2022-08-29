@@ -358,12 +358,12 @@ transmission_bar_chart = dcc.Graph(
     id = 'count_of_vehicles_by_transmission',
     figure = px.bar(
         d.transmission_type_count(start_date, end_date),
-        y='vin',
+        y='count_of_vehicles',
         x='transmission',
         text_auto='.2s',
         title="Count of Used Cars by Transmission",
         labels={ # replaces default labels by column name
-            "vin": "Count of Vehicles", "transmission": "Make"
+            "count_of_vehicles": "Count of Vehicles", "transmission": "Transmission Type"
         }
     )
 )
@@ -383,12 +383,56 @@ def update_transmission_bar_chart (start_date, end_date):
     data = d.transmission_type_count(start_date, end_date)
     fig = px.bar(
         data,
-        y='vin',
+        y='count_of_vehicles',
         x='transmission',
         text_auto='.2s',
         title="Count of Used Cars by Transmission",
         labels={ # replaces default labels by column name
-            "vin": "Count of Vehicles", "transmission": "Make"
+            "count_of_vehicles": "Count of Vehicles", "transmission": "Transmission Type"
+        }
+    )
+
+    return fig
+
+##################################################
+# Vehicle Year Count Bar Chart
+##################################################
+
+vehicle_year_bar_chart = dcc.Graph(
+    id = 'count_of_vehicles_by_vehicle_year',
+    figure = px.bar(
+        d.vehicle_year_count(start_date, end_date),
+        y='count_of_vehicles',
+        x='year',
+        text_auto='.2s',
+        title="Count of Used Cars by Vehicle Year",
+        labels={ # replaces default labels by column name
+            "count_of_vehicles": "Count of Vehicles", "year": "Vehicle Year"
+        }
+    )
+)
+
+@app.callback(
+    Output('count_of_vehicles_by_vehicle_year', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_vehicle_year_bar_chart (start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    data = d.vehicle_year_count(start_date, end_date)
+    fig = px.bar(
+        data,
+        y='count_of_vehicles',
+        x='year',
+        text_auto='.2s',
+        title="Count of Used Cars by Vehicle Year",
+        labels={ # replaces default labels by column name
+            "count_of_vehicles": "Count of Vehicles", "year": "Vehicle Year"
         }
     )
 
@@ -434,7 +478,8 @@ layout = dash.html.Div([
         avg_price_line_chart,
         avg_dealership_inventory_size_by_month_line_chart,
         make_month_line_chart,
-        transmission_bar_chart
+        transmission_bar_chart,
+        vehicle_year_bar_chart
     ], className="dashboard-body")
 
 ])
