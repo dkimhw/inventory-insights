@@ -11,9 +11,10 @@ import datetime
 from app import app
 
 
-####################
+##################################################
 # Starting Variables
-####################
+##################################################
+
 
 end_date =  datetime.date.today()
 start_date = datetime.date(end_date.year, end_date.month - 5, 1).strftime("%Y-%m-%d")
