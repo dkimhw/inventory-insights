@@ -1,0 +1,25 @@
+ #   Column              Non-Null Count  Dtype
+---  ------              --------------  -----
+ 0   title               8115 non-null   object
+ 1   year                8117 non-null   object
+ 2   make                8103 non-null   object
+ 3   model_trim          8117 non-null   object
+ 4   vehicle_type        3457 non-null   object
+ 5   model               6542 non-null   object
+ 6   trim                6752 non-null   object
+ 7   vehicle_mileage     8111 non-null   float64
+ 8   price               7848 non-null   float64
+ 9   exterior_color      8114 non-null   object
+ 10  interior_color      7106 non-null   object
+ 11  transmission        8096 non-null   object
+ 12  engine              8112 non-null   object
+ 13  drivetrain          6601 non-null   object
+ 14  vin                 8113 non-null   object
+ 15  dealership_name     8117 non-null   object
+ 16  dealership_address  8117 non-null   object
+ 17  dealership_zipcode  8117 non-null   object
+ 18  dealership_city     8117 non-null   object
+ 19  dealership_state    8117 non-null   object
+ 20  inventory_url       8117 non-null   object
+ 21  scraped_date        8117 non-null   object
+ 22  filter_row          8117 non-null   int64

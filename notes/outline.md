@@ -27,8 +27,8 @@
 * Make distribution Bar Graph - Count (Done)
 * Price change over time - line chart (Done)
 * Avg monthly inventory per dealership time trend (Done)
-* Make distribution change over time
-* % of transmission difference
+* Make distribution change over time (Done)
+* % of transmission difference (Done)
 
 Tables:
  * Make
@@ -44,11 +44,17 @@ Tables:
 ## Detailed drilldown of each make - I think this should be another web page correct?
 * Create new page
 * Think of new graphs
+    * Price change by that specific make
+    * Mileage time trend
+    * Year time trend
+    * Year of vehicle distribution
+    * Make + model table
+    * Year + Make + model table?
 
 
 ## Harder Questions
 * Avg length to sale
-* Pick a car and see price that they are charging
+* Pick a car and see price that they are charging & changing
 
 
 ## Documentation
