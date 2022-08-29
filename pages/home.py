@@ -350,6 +350,49 @@ def update_make_month_line_chart(start_date, end_date):
 
     return fig
 
+##################################################
+# Transmission Type Count Bar Chart
+##################################################
+
+transmission_bar_chart = dcc.Graph(
+    id = 'count_of_vehicles_by_transmission',
+    figure = px.bar(
+        d.transmission_type_count(start_date, end_date),
+        y='vin',
+        x='transmission',
+        text_auto='.2s',
+        title="Count of Used Cars by Transmission",
+        labels={ # replaces default labels by column name
+            "vin": "Count of Vehicles", "transmission": "Make"
+        }
+    )
+)
+
+@app.callback(
+    Output('transmission_bar_chart', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_transmission_bar_chart (start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    data = d.transmission_type_count(start_date, end_date)
+    fig = px.bar(
+        data,
+        y='vin',
+        x='transmission',
+        text_auto='.2s',
+        title="Count of Used Cars by Transmission",
+        labels={ # replaces default labels by column name
+            "vin": "Count of Vehicles", "transmission": "Make"
+        }
+    )
+
+    return fig
 
 
 ####################
@@ -390,7 +433,8 @@ layout = dash.html.Div([
         make_bar_chart,
         avg_price_line_chart,
         avg_dealership_inventory_size_by_month_line_chart,
-        make_month_line_chart
+        make_month_line_chart,
+        transmission_bar_chart
     ], className="dashboard-body")
 
 ])
