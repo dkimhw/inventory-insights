@@ -1,22 +1,84 @@
 
 # Import necessary libraries
-from dash import html
+import dash
+from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
+import plotly.express as px
+from app import app
+import datetime
+import services.dash_app_data as d
+
+
+##################################################
+# Starting Variables
+##################################################
+
+end_date =  datetime.date.today()
+start_date = datetime.date(end_date.year, end_date.month - 5, 1).strftime("%Y-%m-%d")
+end_date = end_date.strftime("%Y-%m-%d")
+
+##################################################
+# Avg Price by Month Line Chart
+##################################################
+
+avg_price_line_chart = dash.dcc.Graph(
+    id = 'avg_price_by_month_line_chart2',
+    figure = px.line(
+        d.avg_price_by_month('2022-01-01', end_date),
+        x='inventory_month',
+        y='price',
+        title="Average Inventory Price by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "price": "Avg Inventory Price"
+        }
+    )
+)
+
+@app.callback(
+    Output('avg_price_by_month_line_chart2', 'figure'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def update_avg_price_line_chart(start_date, end_date):
+    """
+       start_date: The start date chosen by the user via dash callback
+       end_dte: The end date chosen by the user via dash callback
+
+        Returns: Plotly graph object
+    """
+    line_chart_data = d.avg_price_by_month(start_date, end_date)
+    fig = px.line(
+        line_chart_data,
+        x='inventory_month',
+        y='price',
+        title="Average Inventory Price by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "price": "Avg Inventory Price"
+        }
+    )
+
+    return fig
 
 
 # Define the page layout
 layout = dbc.Container([
-    dbc.Row([
-        html.Center(html.H1("Page 1")),
-        html.Br(),
-        html.Hr(),
-        dbc.Col([
-            html.P("This is column 1."),
-            dbc.Button("Test Button", color="primary")
-        ]),
-        dbc.Col([
-            html.P("This is column 2."),
-            html.P("You can add many cool components using the bootstrap dash components library."),
-        ])
-    ])
+    # Title section
+    dash.html.Div([
+        dash.html.H1("Vehicle Make Detailed Overview", className="dashboard-title")
+    ], className="dashboard-title-section"),
+
+    # Filter section
+    dbc.Row(
+        dbc.Col(
+            dash.dcc.DatePickerRange(
+                id='date-picker-range',
+                min_date_allowed=datetime.date(2022, 1, 1),
+                initial_visible_month=start_date,
+                start_date=start_date,
+                end_date=end_date
+            ),
+            width={"size": 6},
+        ), justify="flex-start", className="dashboard-filter-section"
+    ),
+    avg_price_line_chart
 ])

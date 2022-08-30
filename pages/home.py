@@ -1,10 +1,10 @@
 
 import dash
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import services.dash_app_data as d
 import plotly.express as px
-from dash import Dash, dcc, html, Input, Output
+from dash import dcc, Input, Output
 from datetime import date
 import dash_bootstrap_components as dbc
 import datetime
@@ -15,18 +15,12 @@ from app import app
 # Starting Variables
 ##################################################
 
-
 end_date =  datetime.date.today()
 start_date = datetime.date(end_date.year, end_date.month - 5, 1).strftime("%Y-%m-%d")
 end_date = end_date.strftime("%Y-%m-%d")
 
 indicator_chart_height = 200
 indicator_font_size = 32
-
-
-##################################################
-# Graphs
-##################################################
 
 
 ##################################################
@@ -443,28 +437,28 @@ def update_vehicle_year_bar_chart (start_date, end_date):
 ## Main Layout
 ####################
 
-layout = dash.html.Div([
+layout = dbc.Container([
 
-    # Navbar
     dash.html.Div([
         dash.html.H1("Summary", className="dashboard-title")
     ], className="dashboard-title-section"),
 
+    # Filter section
+    dbc.Row(
+        dbc.Col(
+            dcc.DatePickerRange(
+                id='date-picker-range',
+                min_date_allowed=date(2022, 1, 1),
+                initial_visible_month=start_date,
+                start_date=start_date,
+                end_date=end_date
+            ),
+            width={"size": 6},
+        ), justify="flex-start", className="dashboard-filter-section"
+    ),
+
     # Dashboard body
     dash.html.Div([
-        # Filter section
-        dbc.Row(
-            dbc.Col(
-                dcc.DatePickerRange(
-                    id='date-picker-range',
-                    min_date_allowed=date(2022, 1, 1),
-                    initial_visible_month=start_date,
-                    start_date=start_date,
-                    end_date=end_date
-                ),
-                width={"size": 6},
-            ), justify="flex-start", className="dashboard-filter-section"
-        ),
 
         dash.html.Div(
             [
