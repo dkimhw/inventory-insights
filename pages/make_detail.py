@@ -16,6 +16,7 @@ from dash import dcc
 end_date =  datetime.date.today()
 start_date = datetime.date(end_date.year, end_date.month - 5, 1).strftime("%Y-%m-%d")
 end_date = end_date.strftime("%Y-%m-%d")
+first_selected = 'Ford'
 
 ##################################################
 # Avg Price by Month Line Chart
@@ -84,10 +85,11 @@ layout = dbc.Container([
         dash.html.Label("Vehicle Make"),
         dash.dcc.Dropdown(
           id="make-dropdown",
-          options= ['New York City', 'Montreal', 'San Francisco'],
+          options=d.get_vehicle_makes(),
           multi=True,
           className="filter-input",
-          style={"width": "100%"}
+          style={"width": "100%"},
+          value=first_selected
         )
       ], className="filter-group"),
     ], className="filter-section"),

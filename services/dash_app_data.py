@@ -271,3 +271,25 @@ def vehicle_year_count(start_date, end_date):
   """
   result = query(sql_query)
   return result
+
+
+def get_vehicle_makes():
+  '''
+    Gets the unique vehicle makes in the entire database
+
+    returns:
+      DataFrame with one column: vehicle make
+  '''
+  sql_query = f"""
+    select
+      distinct make
+    from
+      inventory
+    where make is not null
+    order by
+      make;
+  """
+  result = query(sql_query)
+  result = result['make'].tolist()
+  print(result)
+  return result
