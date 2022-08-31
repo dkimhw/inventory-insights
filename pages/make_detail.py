@@ -19,42 +19,92 @@ end_date = end_date.strftime("%Y-%m-%d")
 first_selected = 'Ford'
 
 ##################################################
-# Avg Price by Month Line Chart
+# Avg Price by Month & Make Line Chart
 ##################################################
 
-avg_price_line_chart = dash.dcc.Graph(
-  id = 'avg_price_by_month_line_chart2',
+avg_price_by_make_line_chart = dash.dcc.Graph(
+  id = 'avg_price_by_make_line_chart',
   figure = px.line(
-      d.avg_price_by_month('2022-01-01', end_date),
+      d.get_avg_price_by_month_and_make('2022-01-01', end_date, [first_selected]),
       x='inventory_month',
       y='price',
-      title="Average Inventory Price by Month",
+      color='make',
+      title="Average Inventory Price by Month & Make",
       labels={ # replaces default labels by column name
-          "inventory_month": "Inventory Month", "price": "Avg Inventory Price"
+          "inventory_month": "Inventory Month", "price": "Avg Inventory Price", 'make': 'Make'
       }
   )
 )
 
 @app.callback(
-  Output('avg_price_by_month_line_chart2', 'figure'),
+  Output('avg_price_by_make_line_chart', 'figure'),
   Input('date-picker-range', 'start_date'),
-  Input('date-picker-range', 'end_date')
+  Input('date-picker-range', 'end_date'),
+  Input('make-dropdown', 'value')
 )
-def update_avg_price_line_chart(start_date, end_date):
+def update_avg_price_by_make_line_chart(start_date, end_date, value):
   """
       start_date: The start date chosen by the user via dash callback
       end_dte: The end date chosen by the user via dash callback
 
       Returns: Plotly graph object
   """
-  line_chart_data = d.avg_price_by_month(start_date, end_date)
+  value = [value] if type(value) != list else value
+  line_chart_data = d.get_avg_price_by_month_and_make(start_date, end_date, value)
   fig = px.line(
       line_chart_data,
       x='inventory_month',
       y='price',
-      title="Average Inventory Price by Month",
+      color='make',
+      title="Average Inventory Price by Month & Make",
       labels={ # replaces default labels by column name
-          "inventory_month": "Inventory Month", "price": "Avg Inventory Price"
+          "inventory_month": "Inventory Month", "price": "Avg Inventory Price", 'make': 'Make'
+      }
+  )
+
+  return fig
+
+##################################################
+# Avg Mileage by Month & Make Line Chart
+##################################################
+
+avg_mileage_by_make_line_chart = dash.dcc.Graph(
+  id = 'avg_mileage_by_make_line_chart',
+  figure = px.line(
+      d.get_avg_mileage_by_month_and_make('2022-01-01', end_date, [first_selected]),
+      x='inventory_month',
+      y='mileage',
+      color='make',
+      title="Average Inventory Mileage by Month & Make",
+      labels={ # replaces default labels by column name
+          "inventory_month": "Inventory Month", "mileage": "Avg Inventory Mileage", 'make': 'Make'
+      }
+  )
+)
+
+@app.callback(
+  Output('avg_mileage_by_make_line_chart', 'figure'),
+  Input('date-picker-range', 'start_date'),
+  Input('date-picker-range', 'end_date'),
+  Input('make-dropdown', 'value')
+)
+def update_avg_mileage_by_make_line_chart(start_date, end_date, value):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  value = [value] if type(value) != list else value
+  line_chart_data = d.get_avg_mileage_by_month_and_make(start_date, end_date, value)
+  fig = px.line(
+      line_chart_data,
+      x='inventory_month',
+      y='mileage',
+      color='make',
+      title="Average Inventory Mileage by Month & Make",
+      labels={ # replaces default labels by column name
+          "inventory_month": "Inventory Month", "mileage": "Avg Inventory Mileage", 'make': 'Make'
       }
   )
 
@@ -94,5 +144,6 @@ layout = dbc.Container([
       ], className="filter-group"),
     ], className="filter-section"),
 
-    avg_price_line_chart
+    avg_price_by_make_line_chart,
+    avg_mileage_by_make_line_chart
 ])
