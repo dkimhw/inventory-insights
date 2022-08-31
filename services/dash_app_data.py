@@ -211,7 +211,7 @@ def transmission_type_count(start_date, end_date):
   sql_query = f"""
     with inventory_data as (
       SELECT
-        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start_month')) as vin
+        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start of month')) as vin
         , case
             when transmission LIKE '%Automatic%' then 'Automatic'
             when transmission LIKE '%Manual%' then 'Manual'
@@ -249,7 +249,7 @@ def vehicle_year_count(start_date, end_date):
   sql_query = f"""
     with inventory_data as (
       SELECT
-        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start_month')) as vin
+        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start of month')) as vin
         , year
         , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
       FROM
@@ -268,6 +268,119 @@ def vehicle_year_count(start_date, end_date):
       year
     order by
       year DESC;
+  """
+  result = query(sql_query)
+  return result
+
+
+def get_vehicle_makes():
+  '''
+    Gets the unique vehicle makes in the entire database
+
+    returns:
+      DataFrame with one column: vehicle make
+  '''
+  sql_query = f"""
+    select
+      distinct make
+    from
+      inventory
+    where make is not null
+    order by
+      make;
+  """
+  result = query(sql_query)
+  result = result['make'].tolist()
+  return result
+
+def get_avg_price_by_month_and_make(start_date, end_date, makes):
+  '''
+    Calculates the average inventory price by year & make
+
+    start_date: specify the start time period for filtering out the inventory data for calculating the avg inventory price
+    end_date: specify the end time period for filtering out the inventory data for calculating the avg inventory price
+    make: list of vehicle makes to filter out the inventory data for calculating the avg inventory price
+
+    returns:
+      DataFrame with three columns - year, make, and avg inventory price
+  '''
+  makes_str = "','".join(makes) if makes else ''
+  makes_str = f"and make in ('{makes_str}')" if makes_str != '' else ''
+
+  sql_query = f"""
+    with inventory_data as (
+      SELECT
+        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start of month')) as vin
+        , make
+        , DATE(scraped_date, 'start of month') as inventory_month
+        , price
+        , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
+      FROM
+        inventory
+      WHERE
+        scraped_date >= '{start_date}'
+        and scraped_date <= '{end_date}'
+        {makes_str}
+    )
+    select
+      inventory_month,
+      make,
+      avg(price) as price
+    from
+      inventory_data
+    where
+      filter_row = 1
+    group by
+      inventory_month
+      , make
+    order by
+      inventory_month DESC, make ASC;
+  """
+  result = query(sql_query)
+  return result
+
+def get_avg_mileage_by_month_and_make(start_date, end_date, makes):
+  '''
+    Calculates the average inventory mileage by year & make
+
+    start_date: specify the start time period for filtering out the inventory data for calculating the avg inventory mileage
+    end_date: specify the end time period for filtering out the inventory data for calculating the avg inventory mileage
+    make: list of vehicle makes to filter out the inventory data for calculating the avg inventory mileage
+
+    returns:
+      DataFrame with three columns - year, make, and avg inventory mileage
+  '''
+  makes_str = "','".join(makes) if makes else ''
+  makes_str = f"and make in ('{makes_str}')" if makes_str != '' else ''
+
+  sql_query = f"""
+    with inventory_data as (
+      SELECT
+        coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start of month')) as vin
+        , make
+        , DATE(scraped_date, 'start of month') as inventory_month
+        , vehicle_mileage
+        , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
+      FROM
+        inventory
+      WHERE
+        scraped_date >= '{start_date}'
+        and scraped_date <= '{end_date}'
+        {makes_str}
+    )
+    select
+      inventory_month,
+      make,
+      avg(vehicle_mileage) as mileage
+    from
+      inventory_data
+    where
+      filter_row = 1
+    group by
+      inventory_month
+      , make
+    order by
+      inventory_month DESC, make ASC;
   """
   result = query(sql_query)
   return result
