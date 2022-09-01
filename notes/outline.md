@@ -20,7 +20,7 @@
 2. `python move_to_prod.py`
 
 
-## Bas Dashboard:
+## Base Dashboard:
 * Avg year that dealerships stock (Done)
 * Avg miles that dealerships stock (Done)
 * Avg price that dealerships stock (Done)
@@ -29,16 +29,13 @@
 * Avg monthly inventory per dealership time trend (Done)
 * Make distribution change over time (Done)
 * % of transmission difference (Done)
-
-Tables:
- * Make
-    * Avg price
-    * Count
-    * % of total
-    * Avg year
-    * Avg mileage
-    * Count of different models
- * Most popular year + make + model stocked
+* Make
+  * Avg price
+  * Count
+  * % of total
+  * Avg year
+  * Avg mileage
+  * Count of different models
 
 
 ## Detailed drilldown of each make - I think this should be another web page correct?
@@ -48,13 +45,15 @@ Tables:
     * Mileage time trend
     * Year time trend
     * Year of vehicle distribution
-    * Make + model table
-    * Year + Make + model table?
+    * Most popular year + make + model stocked
 
 
 ## Harder Questions
 * Avg length to sale
+* Which cars are selling the most?
 * Pick a car and see price that they are charging & changing
+  * How are prices changing for a vehicle?
+* Vehicle model type - suv, truck, etc.
 
 
 ## Documentation
