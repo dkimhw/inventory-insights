@@ -110,6 +110,52 @@ def update_avg_mileage_by_make_line_chart(start_date, end_date, value):
 
   return fig
 
+##################################################
+# Avg Vehicle Year by Month & Make Line Chart
+##################################################
+
+avg_vehicle_year_by_make_line_chart = dash.dcc.Graph(
+  id = 'avg_vehicle_year_by_make_line_chart',
+  figure = px.line(
+      d.get_avg_vehicle_year_by_month_and_make('2022-01-01', end_date, [first_selected]),
+      x='inventory_month',
+      y='vehicle_year',
+      color='make',
+      title="Average Inventory Year by Month & Make",
+      labels={ # replaces default labels by column name
+          "inventory_month": "Inventory Month", "vehicle_year": "Avg Inventory Year", 'make': 'Make'
+      }
+  )
+)
+
+@app.callback(
+  Output('avg_vehicle_year_by_make_line_chart', 'figure'),
+  Input('date-picker-range', 'start_date'),
+  Input('date-picker-range', 'end_date'),
+  Input('make-dropdown', 'value')
+)
+def update_avg_vehicle_year_by_make_line_chart(start_date, end_date, value):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  value = [value] if type(value) != list else value
+  line_chart_data = d.get_avg_vehicle_year_by_month_and_make(start_date, end_date, value)
+  fig = px.line(
+      line_chart_data,
+      x='inventory_month',
+      y='vehicle_year',
+      color='make',
+      title="Average Inventory Year by Month & Make",
+      labels={ # replaces default labels by column name
+          "inventory_month": "Inventory Month", "vehicle_year": "Avg Inventory Year", 'make': 'Make'
+      }
+  )
+
+  return fig
+
 
 # Define the page layout
 layout = dbc.Container([
@@ -145,5 +191,6 @@ layout = dbc.Container([
     ], className="filter-section"),
 
     avg_price_by_make_line_chart,
-    avg_mileage_by_make_line_chart
+    avg_mileage_by_make_line_chart,
+    avg_vehicle_year_by_make_line_chart
 ])
