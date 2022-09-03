@@ -109,6 +109,15 @@ dealerships = {
         'zipcode': '03246',
         'city': 'Laconia',
         'state': 'NH'
+    },
+    'Stream Auto Outlet': {
+        'url': 'https://www.streamautooutlet.com/inventory?type=used',
+        'pagination_url': 'https://www.streamautooutlet.com/inventory?type=used&pg=2',
+        'dealership_name': 'Stream Auto Outlet',
+        'address': '324 W Merrick Rd',
+        'zipcode': '11580',
+        'city': 'Valley Stream',
+        'state': 'NY'
     }
 }
 
@@ -425,3 +434,38 @@ def get_dealership_inventory_data():
 
                 page_counter += 1
                 pagination_url = re.sub('pt=[0-9]+', f'pt={page_counter}', pagination_url)
+    elif key == 'Stream Auto Outlet':
+        days_since= pi.days_since_last_scrape(key, DB_NAME, TABLE_NAME)
+
+        if np.isnan(days_since) or days_since > TIME_BTWN_SCRAPE:
+            # Start with parsing the first inventory page
+            response = requests.get(dealerships[key]['url'], headers = headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            data = parse_dealership.get_stream_auto_outlet_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+
+            if 'error' in data.columns:
+                pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+            else:
+                pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
+
+            # Parse out other pages if there are any available
+            pagination_url = dealerships[key]['pagination_url']
+            page_counter = 2
+
+            while (True):
+                response = requests.get(pagination_url, headers = headers)
+                soup_pagination = BeautifulSoup(response.text, "html.parser")
+                title = pi.clean_text_data(pi.parse_subsection_all(soup_pagination, 'h4', 'span', 'srp-vehicle-title'))
+
+                print(pagination_url)
+                if len(title) == 0:
+                    break
+                else:
+                    data = parse_dealership.get_stream_auto_outlet_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    if 'error' in data.columns:
+                        pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
+                    else:
+                        pi.add_data_to_sqlite3(DB_NAME, TABLE_NAME, data)
+
+                page_counter += 1
+                pagination_url = re.sub('pg=[0-9]+', f'pg={page_counter}', pagination_url)
