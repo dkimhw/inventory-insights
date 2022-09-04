@@ -18,3 +18,9 @@ pip install -r requirements.txt
 ```
 python index.py
 ```
+
+## How to Run Web Crawler
+
+1. `cd parse_data`
+
+2. `python parse.py`
