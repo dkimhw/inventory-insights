@@ -113,6 +113,7 @@ dealerships = {
     'Stream Auto Outlet': {
         'url': 'https://www.streamautooutlet.com/inventory?type=used',
         'pagination_url': 'https://www.streamautooutlet.com/inventory?type=used&pg=2',
+        'vehicle_detail_url': 'https://www.streamautooutlet.com',
         'dealership_name': 'Stream Auto Outlet',
         'address': '324 W Merrick Rd',
         'zipcode': '11580',
@@ -441,7 +442,7 @@ def get_dealership_inventory_data():
             # Start with parsing the first inventory page
             response = requests.get(dealerships[key]['url'], headers = headers)
             soup = BeautifulSoup(response.text, "html.parser")
-            data = parse_dealership.get_stream_auto_outlet_inventory_data(soup, dealerships[key], dealerships[key]['url'])
+            data = parse_dealership.get_stream_auto_outlet_inventory_data(soup, dealerships[key], dealerships[key]['url'], headers)
 
             if 'error' in data.columns:
                 pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
@@ -461,7 +462,7 @@ def get_dealership_inventory_data():
                 if len(title) == 0:
                     break
                 else:
-                    data = parse_dealership.get_stream_auto_outlet_inventory_data(soup_pagination, dealerships[key], pagination_url)
+                    data = parse_dealership.get_stream_auto_outlet_inventory_data(soup_pagination, dealerships[key], pagination_url, headers)
                     if 'error' in data.columns:
                         pi.add_data_to_sqlite3(DB_NAME, ERROR_TBL_NAME, data)
                     else:
