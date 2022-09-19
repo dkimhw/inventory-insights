@@ -47,17 +47,18 @@ def avg_inventory_price(start_date, end_date):
   """
     Calculates the average inventory price
 
-    start_date: start time value for filtering out the inventory data
-    end_date: end time value for filtering out the inventory data
+    :param start_date: start time value for filtering out the inventory data
+    :type start_date: str
+    :param end_date: end time value for filtering out the inventory data
+    :type end_date: str
 
-    Returns:
-      Avg inventory price based on input start date and end date
+    :returns: avg inventory price based on input start date and end date
+    :rtype: float
   """
   inv = query_inventory_data()
   inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
   inv['price'] = inv['price'].astype(str).astype(float)
   return inv['price'].mean()
-
 
 
 def avg_vehicle_year(start_date, end_date):
@@ -88,9 +89,9 @@ def avg_vehicle_mileage(start_date, end_date):
   """
   inv = query_inventory_data()
   inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
-  inv['vehicle_mileage'] = inv['vehicle_mileage'].astype(str).astype(float)
+  inv['mileage'] = inv['mileage'].astype(str).astype(float)
 
-  return inv['vehicle_mileage'].mean()
+  return inv['mileage'].mean()
 
 def make_count(start_date, end_date):
   """
@@ -103,15 +104,23 @@ def make_count(start_date, end_date):
       DataFrame with two columns - manufacturer & count of cars
 
   """
-  inv = query_inventory_data()
-  for i, row in inv.iterrows():
-      new_val = row['scraped_date'].strftime('%Y-%m-%d')
-      inv.at[i,'scraped_date'] = new_val
+  sql_query = f"""
+    select
+      make
+      , count(distinct vin) as vin
+    from
+      inventory as i
+    where
+      scraped_date >= '{start_date}'
+      and scraped_date <= '{end_date}'
+    group by
+      1
+    order by
+      1 desc;
+  """
+  result = query(sql_query)
+  return result
 
-  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
-
-  make_count = inv.groupby(['make'], as_index = False).vin.nunique()
-  return make_count
 
 def avg_price_by_month(start_date, end_date):
   """
@@ -122,18 +131,23 @@ def avg_price_by_month(start_date, end_date):
     returns:
       DataFrame with two columns - month & average price
   """
-  inv = query_inventory_data()
-  inv['inventory_month'] = pd.to_datetime(inv['scraped_date'])
-  for i, row in inv.iterrows():
-      #new_datetime_obj = datetime.strptime(row['scraped_date'], '%Y-%m-%d')
-      new_val = datetime.date(row['scraped_date'].year, row['scraped_date'].month, 1).strftime('%Y-%m-%d')
-      inv.at[i,'inventory_month'] = new_val
+  sql_query = f"""
+    select
+      DATE(scraped_date, 'start of month') as inventory_month
+      , avg(price) as price
+    from
+      inventory as i
+    where
+      scraped_date >= '{start_date}'
+      and scraped_date <= '{end_date}'
+    group by
+      1
+    order by
+      1 desc;
+  """
+  result = query(sql_query)
+  return result
 
-
-  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
-  avg_price_by_month = inv.groupby(['inventory_month'], as_index = False).price.mean()
-  avg_price_by_month.sort_values(by="inventory_month", ascending = False, inplace=True)
-  return avg_price_by_month
 
 def avg_dealership_inventory_size_by_month(start_date, end_date):
   """
@@ -359,7 +373,7 @@ def get_avg_mileage_by_month_and_make(start_date, end_date, makes):
         coalesce(vin, title + ' ' + dealership_name + ' - ' + DATE(scraped_date, 'start of month')) as vin
         , make
         , DATE(scraped_date, 'start of month') as inventory_month
-        , vehicle_mileage
+        , mileage
         , row_number() OVER (PARTITION BY vin, DATE(scraped_date, 'start of month')  ORDER BY scraped_date ASC) AS filter_row
       FROM
         inventory
@@ -371,7 +385,7 @@ def get_avg_mileage_by_month_and_make(start_date, end_date, makes):
     select
       inventory_month,
       make,
-      avg(vehicle_mileage) as mileage
+      avg(mileage) as mileage
     from
       inventory_data
     where
@@ -427,6 +441,41 @@ def get_avg_vehicle_year_by_month_and_make(start_date, end_date, makes):
       , make
     order by
       inventory_month DESC, make ASC;
+  """
+  result = query(sql_query)
+  return result
+
+
+def get_make_table_data(start_date, end_date):
+  '''
+    Aggregated metrics for each vehicle make
+
+    :param start_date: specify the start time period for filtering out the inventory data for calculating the aggregated metrics
+    :type start_date: str
+    :param end_date: specify the end time period for filtering out the inventory data for calculating the aggregated metrics
+    :type end_date: str
+
+    :returns: DataFrame with aggregated metrics for each vehicle make
+    :rtype: DataFrame
+  '''
+  sql_query = f"""
+    select
+      make,
+      count(distinct vin) as total_inventory,
+      round(avg(year), 0) as avg_vehicle_year,
+      round(avg(price), 0) as avg_price,
+      round(avg(mileage), 0) as avg_mileage,
+      (select exterior_color from inventory as i2
+        where i2.make = i.make and exterior_color is not null order by scraped_date desc limit 1) as most_popular_exterior_color
+    from
+      inventory as i
+    where
+      scraped_date >= '{start_date}'
+      and scraped_date <= '{end_date}'
+    group by
+      make
+    order by
+      make asc;
   """
   result = query(sql_query)
   return result
