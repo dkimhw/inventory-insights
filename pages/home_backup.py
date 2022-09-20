@@ -69,8 +69,6 @@ def update_avg_price_indicator_chart (start_date, end_date):
                 title = 'Average Inventory Price',
             )
     }
-
-
     return fig
 
 ##################################################

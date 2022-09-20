@@ -23,6 +23,106 @@ indicator_chart_height = 200
 indicator_font_size = 32
 
 ##################################################
+# Tile: Average Inventory Price
+##################################################
+
+# Creates a graph object that displays avg car price based on last scraped month
+@app.callback(
+  Output(component_id = 'avg_inventory_price', component_property = 'children'),
+  Input('date-picker', 'start_date'),
+  Input('date-picker', 'end_date')
+)
+def make_avg_price_indicator_chart (start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  price = d.avg_inventory_price(start_date, end_date)
+  return dcc.Graph(
+    figure = {
+      'data': [
+        go.Indicator(
+          mode = "number",
+          value = price,
+          number={"font":{"size": indicator_font_size}},
+        )
+      ],
+      'layout': go.Layout(
+        title = 'Average Inventory Price',
+        height = indicator_chart_height,
+      )
+    }
+  )
+
+##################################################
+# Tile: Average Inventory Year
+##################################################
+
+@app.callback(
+    Output('avg_inventory_make_year', 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_avg_make_year_chart (start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  avg_year = d.avg_vehicle_year(start_date, end_date)
+  return dcc.Graph(
+    figure = {
+        'data': [
+          go.Indicator(
+              mode = "number",
+              value = avg_year,
+              number={"font":{"size": indicator_font_size}},
+          )
+        ],
+        'layout': go.Layout(
+            title = 'Average Inventory Make Year',
+            height = indicator_chart_height
+        )
+    }
+  )
+
+##################################################
+# Tile: Average Inventory Mileage
+##################################################
+
+@app.callback(
+    Output(component_id = 'avg_inventory_mileage', component_property = 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_avg_inventory_mileage (start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  avg_mileage = d.avg_vehicle_mileage(start_date, end_date)
+  return dcc.Graph(
+    figure = {
+      'data': [
+        go.Indicator(
+          mode = "number",
+          value = avg_mileage,
+          number={"font":{"size": indicator_font_size}},
+        )
+      ],
+      'layout': go.Layout(
+        title = 'Average Inventory Mileage',
+        height = indicator_chart_height
+      )
+    }
+  )
+
+##################################################
 # Count of Makes Bar Chart
 ##################################################
 
@@ -32,23 +132,23 @@ indicator_font_size = 32
     Input('date-picker', 'end_date')
 )
 def make_bar_chart (start_date, end_date):
-    """
-       start_date: The start date chosen by the user via dash callback
-       end_dte: The end date chosen by the user via dash callback
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
 
-        Returns: Plotly graph object
-    """
-    makes_data = d.make_count(start_date, end_date)
-    return dcc.Graph(figure = px.bar(
-        makes_data,
-        y='vin',
-        x='make',
-        text_auto='.2s',
-        title="Count of Used Cars by Make",
-        labels={ # replaces default labels by column name
-            "vin": "Count of Vehicles", "make": "Make"
-        }
-    ))
+      Returns: Plotly graph object
+  """
+  makes_data = d.make_count(start_date, end_date)
+  return dcc.Graph(figure = px.bar(
+    makes_data,
+    y='vin',
+    x='make',
+    text_auto='.2s',
+    title="Count of Used Cars by Make",
+    labels={ # replaces default labels by column name
+        "vin": "Count of Vehicles", "make": "Make"
+    }
+  ))
 
 
 ##################################################
@@ -78,6 +178,35 @@ def make_avg_price_line_chart(start_date, end_date):
       }
   ))
 
+##################################################
+# Avg Delaership Inventory Size by Month Line Chart
+##################################################
+
+@app.callback(
+    Output(component_id = 'avg_dealership_inventory_size_by_month_line_chart', component_property = 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_avg_dealership_inventory_size_line_chart(start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  line_chart_data = d.avg_dealership_inventory_size_by_month(start_date, end_date)
+  return dcc.Graph(
+    figure = px.line(
+        line_chart_data,
+        x='inventory_month',
+        y='inventory_size',
+        title="Average Dealership Inventory Size by Month",
+        labels={ # replaces default labels by column name
+            "inventory_month": "Inventory Month", "inventory_size": "Average Inventory Size per Dealership"
+        }
+    )
+  )
+
 
 ##################################################
 ## Main Layout
@@ -103,9 +232,17 @@ layout = dbc.Container([
         ), justify="flex-start", className="dashboard-filter-section"
     ),
 
+    dash.html.Div(id="indicators", children = [
+      dash.html.Div(id="avg_inventory_price", children = [], className="indicator-chart"),
+      dash.html.Div(id="avg_inventory_make_year", children = [], className="indicator-chart"),
+      dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
+    ], className="indicator-chart-section"),
+
     dash.html.Div(id="graphs", children =[
       dash.html.Div(id="avg_price_line_chart", children = []),
-      dash.html.Div(id="make_count_bar_chart", children = [])
+      dash.html.Div(id="make_count_bar_chart", children = []),
+      dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
+      dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = [])
     ], className="dashboard-body")
 
 ])

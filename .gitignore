@@ -6,3 +6,6 @@ __pycache__/
 .DS_STORE
 *.html
 .python-version
+
+# Ignore dynaconf secret files
+.secrets.*
