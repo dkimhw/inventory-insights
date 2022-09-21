@@ -183,9 +183,9 @@ def make_avg_price_line_chart(start_date, end_date):
 ##################################################
 
 @app.callback(
-    Output(component_id = 'avg_dealership_inventory_size_by_month_line_chart', component_property = 'children'),
-    Input('date-picker', 'start_date'),
-    Input('date-picker', 'end_date')
+  Output(component_id = 'avg_dealership_inventory_size_by_month_line_chart', component_property = 'children'),
+  Input('date-picker', 'start_date'),
+  Input('date-picker', 'end_date')
 )
 def make_avg_dealership_inventory_size_line_chart(start_date, end_date):
   """
@@ -206,6 +206,99 @@ def make_avg_dealership_inventory_size_line_chart(start_date, end_date):
         }
     )
   )
+
+##################################################
+# Transmission Type Count Bar Chart
+##################################################
+
+
+@app.callback(
+  Output(component_id = 'transmission_bar_chart', component_property = 'children'),
+  Input('date-picker', 'start_date'),
+  Input('date-picker', 'end_date')
+)
+def make_transmission_bar_chart (start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  data = d.transmission_type_count(start_date, end_date)
+  return dcc.Graph(
+    figure = px.bar(
+        data,
+        y='count_of_vehicles',
+        x='transmission',
+        text_auto='.2s',
+        title="Count of Used Cars by Transmission",
+        labels={ # replaces default labels by column name
+            "count_of_vehicles": "Count of Vehicles", "transmission": "Transmission Type"
+        }
+    )
+  )
+
+##################################################
+# Count of Makes by Month Line Chart
+##################################################
+
+@app.callback(
+    Output(component_id = 'count_of_vehicles_by_makes_and_month', component_property = 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_make_month_line_chart(start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  data = d.make_count_by_month(start_date, end_date)
+  return dcc.Graph(
+    figure = px.line(
+      data,
+      y='count_of_vehicles',
+      x='inventory_month',
+      color="make",
+      title="Count of Used Cars by Inventory Month & Make (Top 10 Makes Only)",
+      labels={ # replaces default labels by column name
+          "vin": "Count of Vehicles", "inventory_month": "Inventory Month"
+      }
+    )
+  )
+
+
+##################################################
+# Vehicle Year Count Bar Chart
+##################################################
+
+@app.callback(
+    Output(component_id = 'count_of_vehicles_by_vehicle_year', component_property = 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_vehicle_year_bar_chart (start_date, end_date):
+  """
+    start_date: The start date chosen by the user via dash callback
+    end_dte: The end date chosen by the user via dash callback
+
+    Returns: Plotly graph object
+  """
+  data = d.vehicle_year_count(start_date, end_date)
+  return dcc.Graph(
+    figure = px.bar(
+      data,
+      y='count_of_vehicles',
+      x='year',
+      text_auto='.2s',
+      title="Count of Used Cars by Vehicle Year",
+      labels={ # replaces default labels by column name
+          "count_of_vehicles": "Count of Vehicles", "year": "Vehicle Year"
+      }
+    )
+  )
+
 
 
 ##################################################
@@ -238,11 +331,20 @@ layout = dbc.Container([
       dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
     ], className="indicator-chart-section"),
 
-    dash.html.Div(id="graphs", children =[
+    dash.html.Div(id="graphs", children = [
+      # Time Trend Section
       dash.html.Div(id="avg_price_line_chart", children = []),
+      dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
+
+      # Additional Vehicle Information Section
       dash.html.Div(id="make_count_bar_chart", children = []),
+      dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
+      dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
       dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
-      dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = [])
+      dash.html.Div(id="transmission_bar_chart", children = []),
+
+      # Create a distribution section for year, price, and mileage
+      dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = [])
     ], className="dashboard-body")
 
 ])

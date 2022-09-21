@@ -1,4 +1,5 @@
 import pandas as pd
+import sqlalchemy
 from sqlalchemy import create_engine
 from config import settings
 import datetime
@@ -6,43 +7,8 @@ import datetime
 engine = create_engine(f'postgresql://{settings.username}:{settings.password}@{settings.host}:{settings.port}/{settings.database}')
 
 def query(sql_query):
-  result = pd.read_sql_query(sql_query, engine)
+  result = pd.read_sql_query(sqlalchemy.text(sql_query), engine)
   return result
-
-def query_inventory_data():
-  '''
-    Returns the inventory table from cars.db
-
-    Returns:
-      The full scarped used car inventory dataframe
-  '''
-
-  # It is possible to have multiple same vin in a month (e.g. we scraped it multiple times during the same month)
-  # For this dashboard we want to make sure we are only counting one vehicle per month. The reason is imagine we had only 3 cars in the dataset. If two of those were the same vin for the same month - the average we take would be biased towards that particular vin.
-  # Example vin: 19UDE2F70KA002008
-  sql_query = """
-    with inventory_data as (
-    SELECT
-      *
-      , row_number() OVER (PARTITION BY vin, DATE_TRUNC('month', scraped_date) ORDER BY scraped_date ASC) AS filter_row
-    FROM
-      scraped_inventory_data.inventories
-    )
-    select * from inventory_data where filter_row = 1;
-  """
-  result = query(sql_query)
-  # 19UDE2F70KA002008
-  result['scraped_date'] = pd.to_datetime(result['scraped_date'], format='%Y-%m-%d')
-
-  # For vehicles that there was no VIN data use title + scraped_month (Y-m) format as the key for count distincts
-  for i, row in result.iterrows():
-      if (not row['vin']):
-        scraped_month_year = row['scraped_date'].strftime('%Y-%m')
-        unique_id = row['title'] + ' - ' + row['dealership_name'] + ' - ' + scraped_month_year
-        result.at[i, 'vin'] = unique_id
-
-  return result
-
 
 def avg_inventory_price(start_date, end_date):
   """
@@ -206,24 +172,26 @@ def make_count_by_month(start_date, end_date):
       DataFrame with three columns - manufacturer & inventory month & count of cars
 
   """
-  inv = query_inventory_data()
-  inv['inventory_month'] = pd.to_datetime(inv['scraped_date'])
-  for i, row in inv.iterrows():
-      #new_datetime_obj = datetime.strptime(row['scraped_date'], '%Y-%m-%d')
-      new_val = datetime.date(row['scraped_date'].year, row['scraped_date'].month, 1).strftime('%Y-%m-%d')
-      inv.at[i,'inventory_month'] = new_val
-  inv = inv.loc[ (inv['scraped_date'] >= start_date) & (inv['scraped_date'] <= end_date), :]
-
-  make_count = inv.groupby(['make'], as_index = False).vin.nunique()
-  make_count.sort_values(by="vin", ascending = False, inplace=True)
-  top_makes = make_count.head(10)
-  # df.country.isin(countries_to_keep)
-
-  make_date_count = inv.groupby(['make', 'inventory_month'], as_index = False).vin.nunique()
-  make_date_count = make_date_count.loc[make_date_count['make'].isin(top_makes['make']), :]
-  make_date_count.sort_values(by="inventory_month", ascending = False, inplace=True)
-  return make_date_count
-
+  sql_query = f"""
+    SELECT
+      make
+      , DATE_TRUNC('month', scraped_date) as inventory_month
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+      AND make IN (
+        select
+          distinct make
+        from
+          (select make, count(distinct vin) as cnt_vehicles from scraped_inventory_data.inventories group by 1 order by 2 desc limit 10) as a
+      )
+    GROUP BY
+      1, 2
+  """
+  result = query(sql_query)
+  return result
 
 def transmission_type_count(start_date, end_date):
   '''
@@ -240,32 +208,26 @@ def transmission_type_count(start_date, end_date):
   # For this dashboard we want to make sure we are only counting one vehicle per month. The reason is imagine we had only 3 cars in the dataset. If two of those were the same vin for the same month - the average we take would be biased towards that particular vin.
   # Example vin: 19UDE2F70KA002008
   sql_query = f"""
-    with inventory_data as (
-      SELECT
-        vin
-        , case
-            when transmission LIKE '%Automatic%' then 'Automatic'
-            when transmission LIKE '%Manual%' then 'Manual'
-          end as transmission
-        , row_number() OVER (PARTITION BY vin, DATE_TRUNC('month', scraped_date)  ORDER BY scraped_date ASC) AS filter_row
-      FROM
-        scraped_inventory_data.inventories
-      WHERE
-        scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
-    )
-    select
-      transmission
-      , count(distinct vin) as count_of_vehicles
-    from
-      inventory_data
-    where
-      filter_row = 1
-    group by
-      1;
+    SELECT
+      case
+        when transmission LIKE '%Automatic%' or transmission LIKE '%Auto%' then 'Automatic'
+        when transmission LIKE '%Manual%' then 'Manual'
+        when transmission LIKE '%CVT%' then 'Automatic'
+        when transmission LIKE '%Variable' then 'Automatic'
+        when transmission LIKE '%A/T%' then 'Automatic'
+        when transmission LIKE '%M/T%' then 'Manual'
+        else 'Unknown'
+      end as transmission
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1
   """
   result = query(sql_query)
   return result
-
 
 def vehicle_year_count(start_date, end_date):
   '''
@@ -278,31 +240,21 @@ def vehicle_year_count(start_date, end_date):
       DataFrame with two columns - year & count of cars
   '''
   sql_query = f"""
-    with inventory_data as (
-      SELECT
-        vin
-        , year
-        , row_number() OVER (PARTITION BY vin, DATE_TRUNC('month', scraped_date)   ORDER BY scraped_date ASC) AS filter_row
-      FROM
-        scraped_inventory_data.inventories
-      WHERE
-        scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
-    )
-    select
-      year,
-      count(distinct vin) as count_of_vehicles
-    from
-      inventory_data
-    where
-      filter_row = 1
-    group by
+    SELECT
       year
-    order by
-      year DESC;
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+      and year > 1990
+    GROUP BY
+      1
+    ORDER BY
+      1 ASC;
   """
   result = query(sql_query)
   return result
-
 
 def get_vehicle_makes():
   '''
