@@ -7,7 +7,7 @@ body {
 .dashboard-body {
   padding: 0;
   width: 95%;
-  margin: 0 auto;
+  margin: 0 auto 4rem auto;
 }
 
 .dashboard-title {

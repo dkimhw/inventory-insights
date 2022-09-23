@@ -91,7 +91,7 @@ def make_count(start_date, end_date):
   """
   sql_query = f"""
     select
-      make
+      INITCAP(make) as make
       , count(distinct vin) as vin
     from
       scraped_inventory_data.inventories as i
@@ -174,7 +174,7 @@ def make_count_by_month(start_date, end_date):
   """
   sql_query = f"""
     SELECT
-      make
+      INITCAP(make) as make
       , DATE_TRUNC('month', scraped_date) as inventory_month
       , COUNT(DISTINCT vin) as count_of_vehicles
     FROM
@@ -265,7 +265,7 @@ def get_vehicle_makes():
   '''
   sql_query = f"""
     select
-      distinct make
+      distinct INITCAP(make) as make
     from
       scraped_inventory_data.inventories
     where make is not null
@@ -429,22 +429,20 @@ def get_make_table_data(start_date, end_date):
   '''
   sql_query = f"""
     select
-      make,
+      INITCAP(i.make) as make,
       count(distinct vin) as total_inventory,
       round(avg(year), 0) as avg_vehicle_year,
       round(avg(price::numeric), 0) as avg_price,
-      round(avg(mileage), 0) as avg_mileage,
-      (select exterior_color from scraped_inventory_data.inventories as i2
-        where i2.make = i.make and exterior_color is not null order by scraped_date desc limit 1) as most_popular_exterior_color
+      round(avg(mileage), 0) as avg_mileage
     from
       scraped_inventory_data.inventories as i
     where
-      scraped_date >= '{start_date}'
-      and scraped_date <= '{end_date}'
+      scraped_date >= '2022-01-01'
+      and scraped_date <= '2022-09-01'
     group by
-      make
+      INITCAP(make)
     order by
-      make asc;
+      2 desc;
   """
   result = query(sql_query)
   return result

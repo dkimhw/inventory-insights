@@ -323,23 +323,40 @@ def make_data_table_vehicle_make(start_date, end_date):
   :rtype: Dash graph object
   """
   data = d.get_make_table_data(start_date, end_date)
-  fig = go.Figure(data=[go.Table(
-    header = dict(
-      values = data.columns,
-      line_color = 'darkslategray',
-      fill_color = headerColor,
-      align = ['left','center'],
-      font = dict(color='white', size=12)
-    ),
-    cells=dict(
-      values=[data[col] for col in data.columns],
-      line_color='darkslategray',
-      fill_color = [[rowOddColor,rowEvenColor,rowOddColor, rowEvenColor,rowOddColor]*data.shape[0]],
-      align = ['left', 'center'],
-      font = dict(color = 'darkslategray', size = 11)
-      ))
-  ])
-  return dcc.Graph(figure=fig)
+  return dash.dash_table.DataTable(
+    id='datatable-interactivity',
+    columns=[
+        {"name": i.title().replace('_', ' '), "id": i} for i in data.columns
+    ],
+    data = data.to_dict('records'),
+    # editable = True,
+    filter_action = "native",
+    sort_action = "native",
+    sort_mode = "multi",
+    column_selectable="single",
+    selected_columns=[],
+    selected_rows=[],
+    page_action="native",
+    page_current= 0,
+    page_size= 10,
+  )
+  # fig = go.Figure(data=[go.Table(
+  #   header = dict(
+  #     values = [col.title().replace('_', ' ') for col in data.columns],
+  #     line_color = 'darkslategray',
+  #     fill_color = headerColor,
+  #     align = ['left','center'],
+  #     font = dict(color='white', size=15)
+  #   ),
+  #   cells=dict(
+  #     values=[data[col] for col in data.columns],
+  #     line_color='darkslategray',
+  #     fill_color = [[rowOddColor,rowEvenColor]*data.shape[0]],
+  #     align = ['left', 'center'],
+  #     font = dict(color = 'black', size = 13)
+  #     ))
+  # ])
+  # return dcc.Graph(figure=fig)
 
 
 ##################################################
