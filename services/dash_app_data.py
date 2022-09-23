@@ -434,7 +434,7 @@ def get_make_table_data(start_date, end_date):
       round(avg(year), 0) as avg_vehicle_year,
       round(avg(price::numeric), 0) as avg_price,
       round(avg(mileage), 0) as avg_mileage,
-      (select exterior_color from inventory as i2
+      (select exterior_color from scraped_inventory_data.inventories as i2
         where i2.make = i.make and exterior_color is not null order by scraped_date desc limit 1) as most_popular_exterior_color
     from
       scraped_inventory_data.inventories as i

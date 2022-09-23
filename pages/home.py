@@ -300,6 +300,47 @@ def make_vehicle_year_bar_chart (start_date, end_date):
   )
 
 
+##################################################
+# Make Data Table
+##################################################
+
+headerColor = 'grey'
+rowEvenColor = 'lightgrey'
+rowOddColor = 'white'
+
+@app.callback(
+  Output(component_id = 'make_data_table', component_property = 'children'),
+  Input('date-picker', 'start_date'),
+  Input('date-picker', 'end_date')
+)
+def make_data_table_vehicle_make(start_date, end_date):
+  """
+  :param start_date: The start date chosen by the user via dash callback
+  :type start_date: str
+  :param end_date: The end date chosen by the user via dash callback
+
+  :returns: Data table aggregated by vehicle makes
+  :rtype: Dash graph object
+  """
+  data = d.get_make_table_data(start_date, end_date)
+  fig = go.Figure(data=[go.Table(
+    header = dict(
+      values = data.columns,
+      line_color = 'darkslategray',
+      fill_color = headerColor,
+      align = ['left','center'],
+      font = dict(color='white', size=12)
+    ),
+    cells=dict(
+      values=[data[col] for col in data.columns],
+      line_color='darkslategray',
+      fill_color = [[rowOddColor,rowEvenColor,rowOddColor, rowEvenColor,rowOddColor]*data.shape[0]],
+      align = ['left', 'center'],
+      font = dict(color = 'darkslategray', size = 11)
+      ))
+  ])
+  return dcc.Graph(figure=fig)
+
 
 ##################################################
 ## Main Layout
@@ -344,7 +385,10 @@ layout = dbc.Container([
       dash.html.Div(id="transmission_bar_chart", children = []),
 
       # Create a distribution section for year, price, and mileage
-      dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = [])
+      dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
+
+      # Make overview data table
+      dash.html.Div(id="make_data_table", children = [])
     ], className="dashboard-body")
 
 ])
