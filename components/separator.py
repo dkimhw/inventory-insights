@@ -2,9 +2,8 @@
 import dash
 import dash_bootstrap_components as dbc
 
-
 # Define the navbar structure
-def Navbar():
+def Separator():
   layout = dash.html.Div([
     dbc.NavbarSimple(
       children=[

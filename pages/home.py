@@ -1,6 +1,6 @@
 
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import services.dash_app_data as d
 import plotly.express as px
@@ -9,6 +9,7 @@ from datetime import date
 import dash_bootstrap_components as dbc
 import datetime
 from app import app
+from components import collapse, separator
 
 
 ##################################################
@@ -340,24 +341,57 @@ def make_data_table_vehicle_make(start_date, end_date):
     page_current= 0,
     page_size= 10,
   )
-  # fig = go.Figure(data=[go.Table(
-  #   header = dict(
-  #     values = [col.title().replace('_', ' ') for col in data.columns],
-  #     line_color = 'darkslategray',
-  #     fill_color = headerColor,
-  #     align = ['left','center'],
-  #     font = dict(color='white', size=15)
-  #   ),
-  #   cells=dict(
-  #     values=[data[col] for col in data.columns],
-  #     line_color='darkslategray',
-  #     fill_color = [[rowOddColor,rowEvenColor]*data.shape[0]],
-  #     align = ['left', 'center'],
-  #     font = dict(color = 'black', size = 13)
-  #     ))
-  # ])
-  # return dcc.Graph(figure=fig)
 
+##################################################
+## Collapse Filter
+##################################################
+
+filter_content = dbc.Row(
+  dcc.DatePickerRange(
+    id='date-picker',
+    min_date_allowed=date(2022, 1, 1),
+    initial_visible_month=start_date,
+    start_date=start_date,
+    end_date=end_date
+  )
+)
+
+hide_filter = collapse.Collapse('hide_filter', filter_content)
+@app.callback(
+  Output("hide_filter", "is_open"),
+  [Input("filter-collapse", "n_clicks")],
+  [State("hide_filter", "is_open")],
+)
+def toggle_collapse(filter_collapse, is_open):
+  if filter_collapse:
+    return not is_open
+  return is_open
+
+
+##################################################
+## Collapse Info
+##################################################
+
+info = dbc.Row(
+  dbc.Card(
+    """
+      Data has been aggregated from scraping 15 different dealership sites.
+
+      Note that in May no data was scraped.
+    """
+  )
+)
+
+hide_info = collapse.Collapse('hide_info', info)
+@app.callback(
+  Output("hide_info", "is_open"),
+  [Input("info-collapse", "n_clicks")],
+  [State("hide_info", "is_open")],
+)
+def toggle_collapse(info_collapse, is_open):
+  if info_collapse:
+    return not is_open
+  return is_open
 
 ##################################################
 ## Main Layout
@@ -365,47 +399,59 @@ def make_data_table_vehicle_make(start_date, end_date):
 
 layout = dbc.Container([
 
-    dash.html.Div([
-        dash.html.H1("Summary", className="dashboard-title")
-    ], className="dashboard-title-section"),
+  # Header section
+  dash.html.Div([
+      dash.html.H1("Summary", className="dashboard-title")
+  ], className="dashboard-title-section"),
 
-    # Filter section
-    dbc.Row(
-        dbc.Col(
-            dcc.DatePickerRange(
-                id='date-picker',
-                min_date_allowed=date(2022, 1, 1),
-                initial_visible_month=start_date,
-                start_date=start_date,
-                end_date=end_date
-            ),
-            width={"size": 6},
-        ), justify="flex-start", className="dashboard-filter-section"
+  # Icon Buttons Section
+  dash.html.Div([
+    dbc.Button(
+      id="filter-collapse",
+      className="fa-solid fa-filter",
+      color="primary",
+      n_clicks=0,
+    ),
+    dbc.Button(
+      id="info-collapse",
+      className="fa-solid fa-info",
+      color="primary",
+      n_clicks=0,
     ),
 
-    dash.html.Div(id="indicators", children = [
-      dash.html.Div(id="avg_inventory_price", children = [], className="indicator-chart"),
-      dash.html.Div(id="avg_inventory_make_year", children = [], className="indicator-chart"),
-      dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
-    ], className="indicator-chart-section"),
+  ], className="icon-container"),
 
-    dash.html.Div(id="graphs", children = [
-      # Time Trend Section
-      dash.html.Div(id="avg_price_line_chart", children = []),
-      dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
+  # Collapsed Section
+  dash.html.Div([
+    hide_filter,
+  ], className = 'collapsed-content'),
+  dash.html.Div([
+    hide_info,
+  ], className = 'collapsed-content'),
 
-      # Additional Vehicle Information Section
-      dash.html.Div(id="make_count_bar_chart", children = []),
-      dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
-      dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
-      dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
-      dash.html.Div(id="transmission_bar_chart", children = []),
+  # Dashboard Body
+  dash.html.Div(id="indicators", children = [
+    dash.html.Div(id="avg_inventory_price", children = [], className="indicator-chart"),
+    dash.html.Div(id="avg_inventory_make_year", children = [], className="indicator-chart"),
+    dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
+  ], className="indicator-chart-section"),
 
-      # Create a distribution section for year, price, and mileage
-      dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
+  dash.html.Div(id="graphs", children = [
+    # Time Trend Section
+    dash.html.Div(id="avg_price_line_chart", children = []),
+    dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
 
-      # Make overview data table
-      dash.html.Div(id="make_data_table", children = [])
-    ], className="dashboard-body")
+    # Additional Vehicle Information Section
+    dash.html.Div(id="make_count_bar_chart", children = []),
+    dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
+    dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
+    dash.html.Div(id="transmission_bar_chart", children = []),
+
+    # Create a distribution section for year, price, and mileage
+    dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
+
+    # Make overview data table
+    dash.html.Div(id="make_data_table", children = [])
+  ], className="dashboard-body")
 
 ])

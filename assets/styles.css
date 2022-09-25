@@ -19,6 +19,7 @@ body {
 .dashboard-title-section {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   /* border-bottom: 1.25px #636efa solid; */
   font-size: 1.25rem;
   margin-top: 1.5rem;
@@ -44,6 +45,23 @@ body {
   /* height: 3rem; */
   border-radius: .5rem;
   /* border: 1px solid #636efa; */
+}
+
+/* Icons */
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.icon-container > * {
+  margin-right: .5rem;
+}
+
+.collapsed-content {
+  margin-bottom: 1rem;
 }
 
 /* Indicator Charts */
