@@ -430,28 +430,29 @@ layout = dbc.Container([
   ], className = 'collapsed-content'),
 
   # Dashboard Body
+  # At a Glance Section
+  separator.Separator("At a Glance"),
   dash.html.Div(id="indicators", children = [
     dash.html.Div(id="avg_inventory_price", children = [], className="indicator-chart"),
     dash.html.Div(id="avg_inventory_make_year", children = [], className="indicator-chart"),
     dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
   ], className="indicator-chart-section"),
+  dash.html.Div(id="avg_price_line_chart", children = []),
+  dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
 
-  dash.html.Div(id="graphs", children = [
-    # Time Trend Section
-    dash.html.Div(id="avg_price_line_chart", children = []),
-    dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
+  # Create a distribution section for year, price, and mileage
+  separator.Separator("Distribution of Vehicle Year, Price, and Mileage"),
+  dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
 
-    # Additional Vehicle Information Section
-    dash.html.Div(id="make_count_bar_chart", children = []),
-    dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
-    dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
-    dash.html.Div(id="transmission_bar_chart", children = []),
+  # Additional Vehicle Information Section
+  separator.Separator("Additional Vehicle Information"),
+  dash.html.Div(id="make_count_bar_chart", children = []),
+  dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
+  dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
+  dash.html.Div(id="transmission_bar_chart", children = []),
 
-    # Create a distribution section for year, price, and mileage
-    dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
-
-    # Make overview data table
-    dash.html.Div(id="make_data_table", children = [])
-  ], className="dashboard-body")
+  # Make overview data table
+  separator.Separator("Detailed Vehicle Make Overview"),
+  dash.html.Div(id="make_data_table", children = [])
 
 ])

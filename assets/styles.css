@@ -64,6 +64,17 @@ body {
   margin-bottom: 1rem;
 }
 
+/* Separator Styles */
+
+.separator {
+  text-align: center;
+  background-color: #2C3E50;
+  color: #fff;
+  font-size: 1.5rem;
+  padding: .75rem 0;
+  margin: 1rem 0;
+}
+
 /* Indicator Charts */
 
 .indicator-chart-section {
