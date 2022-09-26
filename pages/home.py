@@ -74,19 +74,20 @@ def make_avg_make_year_chart (start_date, end_date):
       Returns: Plotly graph object
   """
   avg_year = d.avg_vehicle_year(start_date, end_date)
+  print("avg_year", avg_year)
   return dcc.Graph(
     figure = {
-        'data': [
-          go.Indicator(
-              mode = "number",
-              value = avg_year,
-              number={"font":{"size": indicator_font_size}},
-          )
-        ],
-        'layout': go.Layout(
-            title = 'Average Inventory Make Year',
-            height = indicator_chart_height
+      'data': [
+        go.Indicator(
+          mode = "number",
+          value = avg_year,
+          number={"font":{"size": indicator_font_size}, 'valueformat':'f'},
         )
+      ],
+      'layout': go.Layout(
+          title = 'Average Inventory Make Year',
+          height = indicator_chart_height
+      )
     }
   )
 
@@ -180,6 +181,39 @@ def make_avg_price_line_chart(start_date, end_date):
   ))
 
 ##################################################
+# Avg Mileage by Month Line Chart
+##################################################
+
+@app.callback(
+    Output('avg_mileage_line_chart', 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_avg_mileage_line_chart(start_date, end_date):
+  """
+  Returns a line chart of average mileage by month
+
+  :params start_date: The start date used to display specific time range for the line chart
+  :type start_date: str
+  :params end_date: The end date used to display specific time range for the line chart
+  :type end_date: str
+
+  :returns: Dash graph object of average mileage by month
+  :rtype: Dash graph object
+  """
+  line_chart_data = d.avg_mileage_by_month(start_date, end_date)
+  return dcc.Graph(figure = px.line(
+      line_chart_data,
+      x='inventory_month',
+      y='avg_mileage',
+      title="Average Inventory Mileage by Month",
+      labels={ # replaces default labels by column name
+          "inventory_month": "Inventory Month", "avg_mileage": "Avg Inventory Mileage"
+      }
+  ))
+
+
+##################################################
 # Avg Delaership Inventory Size by Month Line Chart
 ##################################################
 
@@ -271,7 +305,7 @@ def make_make_month_line_chart(start_date, end_date):
 
 
 ##################################################
-# Vehicle Year Count Bar Chart
+# Vehicle Year Histogram
 ##################################################
 
 @app.callback(
@@ -287,19 +321,100 @@ def make_vehicle_year_bar_chart (start_date, end_date):
     Returns: Plotly graph object
   """
   data = d.vehicle_year_count(start_date, end_date)
+  fig = px.histogram(
+    data,
+    y='count_of_vehicles',
+    x='year',
+    marginal='box',
+    text_auto='.2s',
+    histfunc='sum',
+    title="Vehicle Year Frequency Chart",
+    labels={
+        "year": "Vehicle Year",
+        "count_of_vehicles": "Count of Vehicles"
+    },
+    nbins= 20,
+    color_discrete_sequence=['#4C6793']
+  ).update_layout(
+    yaxis_title="Count of Vehicles"
+  )
   return dcc.Graph(
-    figure = px.bar(
-      data,
-      y='count_of_vehicles',
-      x='year',
-      text_auto='.2s',
-      title="Count of Used Cars by Vehicle Year",
-      labels={ # replaces default labels by column name
-          "count_of_vehicles": "Count of Vehicles", "year": "Vehicle Year"
-      }
-    )
+    figure = fig
   )
 
+##################################################
+# Mileage Histogram
+##################################################
+
+@app.callback(
+    Output(component_id = 'mileage_distribution_chart', component_property = 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_mileage_distribution_chart (start_date, end_date):
+  """
+    start_date: The start date chosen by the user via dash callback
+    end_dte: The end date chosen by the user via dash callback
+
+    Returns: Plotly graph object
+  """
+  data = d.get_mileage_distribution_data(start_date, end_date)
+  fig = px.histogram(
+    data,
+    y='count_of_vehicles',
+    x='mileage',
+    marginal="box",
+    text_auto='.2s',
+    histfunc='sum',
+    title="Vehicle Mileage Frequency Chart",
+    labels={ # replaces default labels by column name
+      "mileage": "Mileage"
+    },
+    color_discrete_sequence=['#4C6793']
+  ).update_layout(
+    yaxis_title="Count of Vehicles"
+  )
+  return dcc.Graph(
+    figure = fig
+
+  )
+
+##################################################
+# Price Histogram
+##################################################
+
+@app.callback(
+    Output(component_id = 'price_distribution_chart', component_property = 'children'),
+    Input('date-picker', 'start_date'),
+    Input('date-picker', 'end_date')
+)
+def make_price_distribution_chart (start_date, end_date):
+  """
+    start_date: The start date chosen by the user via dash callback
+    end_dte: The end date chosen by the user via dash callback
+
+    Returns: Plotly graph object
+  """
+  data = d.get_price_distribution_data(start_date, end_date)
+  fig = px.histogram(
+    data,
+    y='count_of_vehicles',
+    x='price',
+    marginal="box",
+    text_auto='.2s',
+    histfunc='sum',
+    title="Vehicle Price Frequency Chart",
+    labels={ # replaces default labels by column name
+      "price": "Price"
+    },
+    nbins=30,
+    color_discrete_sequence=['#4C6793']
+  ).update_layout(
+    yaxis_title="Count of Vehicles"
+  )
+  return dcc.Graph(
+    figure = fig
+  )
 
 ##################################################
 # Make Data Table
@@ -316,9 +431,12 @@ rowOddColor = 'white'
 )
 def make_data_table_vehicle_make(start_date, end_date):
   """
+  Returns data table of vehicle makes
+
   :param start_date: The start date chosen by the user via dash callback
   :type start_date: str
   :param end_date: The end date chosen by the user via dash callback
+  :type end_date: str
 
   :returns: Data table aggregated by vehicle makes
   :rtype: Dash graph object
@@ -398,7 +516,6 @@ def toggle_collapse(info_collapse, is_open):
 ##################################################
 
 layout = dbc.Container([
-
   # Header section
   dash.html.Div([
       dash.html.H1("Summary", className="dashboard-title")
@@ -438,11 +555,14 @@ layout = dbc.Container([
     dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
   ], className="indicator-chart-section"),
   dash.html.Div(id="avg_price_line_chart", children = []),
+  dash.html.Div(id="avg_mileage_line_chart", children = []),
   dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
 
   # Create a distribution section for year, price, and mileage
   separator.Separator("Distribution of Vehicle Year, Price, and Mileage"),
   dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
+  dash.html.Div(id="mileage_distribution_chart", children = []),
+  dash.html.Div(id="price_distribution_chart", children = []),
 
   # Additional Vehicle Information Section
   separator.Separator("Additional Vehicle Information"),
