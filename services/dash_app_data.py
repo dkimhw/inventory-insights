@@ -12,15 +12,15 @@ def query(sql_query):
 
 def avg_inventory_price(start_date, end_date):
   """
-    Calculates the average inventory price
+  Returns the average inventory price
 
-    :param start_date: start time value for filtering out the inventory data
-    :type start_date: str
-    :param end_date: end time value for filtering out the inventory data
-    :type end_date: str
+  :params start_date: start time value for filtering out the inventory data
+  :type start_date: str
+  :params end_date: end time value for filtering out the inventory data
+  :type end_date: str
 
-    :returns: avg inventory price based on input start date and end date
-    :rtype: float
+  :returns: avg inventory price based on input start date and end date
+  :rtype: float
   """
   sql_query = f"""
     select
@@ -36,17 +36,19 @@ def avg_inventory_price(start_date, end_date):
 
 def avg_vehicle_year(start_date, end_date):
   """
-    Calculates the average vehicle year
+  Returns the average vehicle year
 
-    start_date: start time value for filtering out the inventory data
-    end_date: end time value for filtering out the inventory data
+  :params start_date: start time value for filtering out the inventory data
+  :type start_date: str
+  :params end_date: end time value for filtering out the inventory data
+  :type end_date: str
 
-    Returns:
-      Avg vehicle year based on input start date and end date
+  :returns: Avg vehicle year based on input start date and end date
+  :rtype: float
   """
   sql_query = f"""
     select
-      avg(year::numeric) as year
+      round(avg(year::numeric), 0) as year
     from
       scraped_inventory_data.inventories as i
     where
@@ -58,13 +60,15 @@ def avg_vehicle_year(start_date, end_date):
 
 def avg_vehicle_mileage(start_date, end_date):
   """
-    Calculates the average vehicle mileage
+  Returns the average vehicle mileage
 
-    start_date: start time value for filtering out the inventory data
-    end_date: end time value for filtering out the inventory data
+  :params start_date: start time value for filtering out the inventory data
+  :type start_date: str
+  :params end_date: end time value for filtering out the inventory data
+  :type end_date: str
 
-    Returns:
-      Avg vehicle mileage based on input start date and end date
+  :returns: Avg vehicle mileage based on input start date and end date
+  :rtype: float
   """
   sql_query = f"""
     select
@@ -80,14 +84,15 @@ def avg_vehicle_mileage(start_date, end_date):
 
 def make_count(start_date, end_date):
   """
-    Calculates the number of cars by manufacturer
+  Returns the number of cars by manufacturer
 
-    start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
-    end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :type end_date: str
 
-    returns:
-      DataFrame with two columns - manufacturer & count of cars
-
+  :returns: DataFrame with two columns - manufacturer & count of cars
+  :rtype: DataFrame
   """
   sql_query = f"""
     select
@@ -108,12 +113,15 @@ def make_count(start_date, end_date):
 
 def avg_price_by_month(start_date, end_date):
   """
-    Calculates the average price by month
+  Returns the average price by month
 
-    start_date: specify the start time period for filtering out the inventory data for calculating the average price by month
-    end_date: specify the end time period for filtering out the inventory data for calculating the average price by month
-    returns:
-      DataFrame with two columns - month & average price
+  :params start_date: specify the start time period for filtering out the inventory data for calculating the average price by month
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for calculating the average price by month
+  :type end_date: str
+
+  :returns: DataFrame with two columns - month & average price
+  :rtype: DataFrame
   """
   sql_query = f"""
     select
@@ -132,22 +140,51 @@ def avg_price_by_month(start_date, end_date):
   result = query(sql_query)
   return result
 
+def avg_mileage_by_month(start_date, end_date):
+  """
+  Returns the average mileage by month
+
+  :params start_date: specify the start time period for filtering out the inventory data for calculating the average mileage by month
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for calculating the average mileage by month
+  :type end_date: str
+
+  :returns: DataFrame with two columns - month & average mileage
+  :rtype: DataFrame
+  """
+  sql_query = f"""
+    select
+      DATE_TRUNC('month', scraped_date)  as inventory_month
+      , avg(mileage::numeric) as avg_mileage
+    from
+      scraped_inventory_data.inventories as i
+    where
+      scraped_date >= '{start_date}'
+      and scraped_date <= '{end_date}'
+    group by
+      1
+    order by
+      1 desc;
+  """
+  result = query(sql_query)
+  return result
+
 def avg_dealership_inventory_size_by_month(start_date, end_date):
   """
-    Calculates the average inventory size by month
+  Returns the average inventory size by month
 
-    :param start_date: specify the start time period for filtering out the inventory data for calculating the average inventory size by month
-    :type start_date: str
-    :param end_date: specify the end time period for filtering out the inventory data for calculating the average inventory size by month
-    :type end_date: str
+  :params start_date: specify the start time period for filtering out the inventory data for calculating the average inventory size by month
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for calculating the average inventory size by month
+  :type end_date: str
 
-    :returns: DataFrame with two columns - month & average inventory size
-    :rtype: DataFrame
+  :returns: DataFrame with two columns - month & average inventory size
+  :rtype: DataFrame
   """
   sql_query = f"""
     select
       DATE_TRUNC('month', scraped_date) as inventory_month
-      , avg(mileage::numeric) as inventory_size
+      , count(distinct vin) / count(distinct dealership_name) as inventory_size
     from
       scraped_inventory_data.inventories as i
     where
@@ -163,14 +200,15 @@ def avg_dealership_inventory_size_by_month(start_date, end_date):
 
 def make_count_by_month(start_date, end_date):
   """
-    Calculates the number of cars by manufacturer & scraped month
+  Returns the number of cars by manufacturer & scraped month
 
-    start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
-    end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :type end_date: str
 
-    returns:
-      DataFrame with three columns - manufacturer & inventory month & count of cars
-
+  :returns: DataFrame with three columns - manufacturer & inventory month & count of cars
+  :rtype: DataFrame
   """
   sql_query = f"""
     SELECT
@@ -195,18 +233,16 @@ def make_count_by_month(start_date, end_date):
 
 def transmission_type_count(start_date, end_date):
   '''
-    Calculates the number of cars by transmission type
+  Returns the count of cars by transmission type
 
-    start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
-    end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by transmission
+  :type start_date: str
+  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by transmission
+  :type end_date: str
 
-    returns:
-      DataFrame with two columns - transmission type & count of cars
+  :returns: DataFrame with two columns - transmission type & count of cars
+  :rtype: DataFrame
   '''
-
-  # It is possible to have multiple same vin in a month (e.g. we scraped it multiple times during the same month)
-  # For this dashboard we want to make sure we are only counting one vehicle per month. The reason is imagine we had only 3 cars in the dataset. If two of those were the same vin for the same month - the average we take would be biased towards that particular vin.
-  # Example vin: 19UDE2F70KA002008
   sql_query = f"""
     SELECT
       case
@@ -229,15 +265,84 @@ def transmission_type_count(start_date, end_date):
   result = query(sql_query)
   return result
 
+def drivetrain_type_count(start_date, end_date):
+  '''
+  Returns the count of cars by drivetrain type
+
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by drivetrain
+  :type start_date: str
+  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by drivetrain
+  :type end_date: str
+
+  :returns: DataFrame with two columns - drivetrain type & count of cars
+  :rtype: DataFrame
+  '''
+  sql_query = f"""
+    SELECT
+      case
+        when drivetrain LIKE '%FWD%' or drivetrain LIKE '%Front Wheel Drive%' then 'Front Wheel Drive'
+        when drivetrain LIKE '%2WD%' then 'Front Wheel Drive'
+        when drivetrain LIKE '%RWD%' then 'Rear Wheel Drive'
+        when drivetrain LIKE '%Rear Wheel Drive%' then 'Rear Wheel Drive'
+        when
+          drivetrain LIKE '%AWD%'
+          or drivetrain LIKE '%4WD%'
+          or drivetrain LIKE '%quattro%'
+          or drivetrain LIKE '%4MATIC®%'
+          or drivetrain LIKE '%Four Wheel Drive%'
+          then 'All Wheel Drive'
+        else 'Unknown'
+      end as drivetrain
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1;
+  """
+  result = query(sql_query)
+  return result
+
+def exterior_color_type_count(start_date, end_date):
+  '''
+  Returns the count of cars by exterior color (top 10 only)
+
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by exterior color
+  :type start_date: str
+  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by exterior color
+  :type end_date: str
+
+  :returns: DataFrame with two columns - exterior color & count of cars
+  :rtype: DataFrame
+  '''
+  sql_query = f"""
+    SELECT
+      exterior_color
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1
+    ORDER BY 2 DESC
+    LIMIT 10;
+  """
+  result = query(sql_query)
+  return result
+
 def vehicle_year_count(start_date, end_date):
   '''
-    Calculates the number of cars by vehicle year
+  Returns the number of cars by vehicle year
 
-    start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
-    end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :type end_date: str
 
-    returns:
-      DataFrame with two columns - year & count of cars
+  :returns: DataFrame with two columns - year & count of cars
+  :rtype: DataFrame
   '''
   sql_query = f"""
     SELECT
@@ -256,12 +361,68 @@ def vehicle_year_count(start_date, end_date):
   result = query(sql_query)
   return result
 
+def get_mileage_distribution_data(start_date, end_date):
+  '''
+  Returns the number of cars by mileage
+
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by mileage
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for counting the num of cars by mileage
+  :type end_date: str
+
+  :returns: DataFrame with two columns - mileage & count of cars
+  :rtype: DataFrame
+  '''
+  sql_query = f"""
+    SELECT
+      mileage
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1
+    ORDER BY
+      1 ASC;
+  """
+  result = query(sql_query)
+  return result
+
+def get_price_distribution_data(start_date, end_date):
+  '''
+  Returns the number of cars by price
+
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by price
+  :type start_date: str
+  :params end_date: specify the end time period for filtering out the inventory data for counting the num of cars by price
+  :type end_date: str
+
+  :returns: DataFrame with two columns - price & count of cars
+  :rtype: DataFrame
+  '''
+  sql_query = f"""
+    SELECT
+      round(price::numeric, 0) as price
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1
+    ORDER BY
+      1 ASC;
+  """
+  result = query(sql_query)
+  return result
+
 def get_vehicle_makes():
   '''
-    Gets the unique vehicle makes in the entire database
+  Returns the unique vehicle makes in the entire database
 
-    returns:
-      DataFrame with one column: vehicle make
+  :returns: DataFrame with one column - vehicle make
+  :rtype: DataFrame
   '''
   sql_query = f"""
     select
