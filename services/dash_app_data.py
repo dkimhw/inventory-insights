@@ -56,7 +56,6 @@ def avg_vehicle_year(start_date, end_date):
       and scraped_date <= '{end_date}'
   """
   result = query(sql_query)
-  print(result)
   return result['year'].values[0]
 
 def avg_vehicle_mileage(start_date, end_date):
@@ -236,9 +235,9 @@ def transmission_type_count(start_date, end_date):
   '''
   Returns the count of cars by transmission type
 
-  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by transmission
   :type start_date: str
-  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by manufacturer
+  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by transmission
   :type end_date: str
 
   :returns: DataFrame with two columns - transmission type & count of cars
@@ -262,6 +261,73 @@ def transmission_type_count(start_date, end_date):
       scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
     GROUP BY
       1
+  """
+  result = query(sql_query)
+  return result
+
+def drivetrain_type_count(start_date, end_date):
+  '''
+  Returns the count of cars by drivetrain type
+
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by drivetrain
+  :type start_date: str
+  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by drivetrain
+  :type end_date: str
+
+  :returns: DataFrame with two columns - drivetrain type & count of cars
+  :rtype: DataFrame
+  '''
+  sql_query = f"""
+    SELECT
+      case
+        when drivetrain LIKE '%FWD%' or drivetrain LIKE '%Front Wheel Drive%' then 'Front Wheel Drive'
+        when drivetrain LIKE '%2WD%' then 'Front Wheel Drive'
+        when drivetrain LIKE '%RWD%' then 'Rear Wheel Drive'
+        when drivetrain LIKE '%Rear Wheel Drive%' then 'Rear Wheel Drive'
+        when
+          drivetrain LIKE '%AWD%'
+          or drivetrain LIKE '%4WD%'
+          or drivetrain LIKE '%quattro%'
+          or drivetrain LIKE '%4MATIC®%'
+          or drivetrain LIKE '%Four Wheel Drive%'
+          then 'All Wheel Drive'
+        else 'Unknown'
+      end as drivetrain
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1;
+  """
+  result = query(sql_query)
+  return result
+
+def exterior_color_type_count(start_date, end_date):
+  '''
+  Returns the count of cars by exterior color (top 10 only)
+
+  :params start_date: specify the start time period for filtering out the inventory data for counting the num of cars by exterior color
+  :type start_date: str
+  :params  end_date: specify the end time period for filtering out the inventory data for counting the num of cars by exterior color
+  :type end_date: str
+
+  :returns: DataFrame with two columns - exterior color & count of cars
+  :rtype: DataFrame
+  '''
+  sql_query = f"""
+    SELECT
+      exterior_color
+      , COUNT(DISTINCT vin) as count_of_vehicles
+    FROM
+      scraped_inventory_data.inventories
+    WHERE
+      scraped_date >= '{start_date}' and scraped_date <= '{end_date}'
+    GROUP BY
+      1
+    ORDER BY 2 DESC
+    LIMIT 10;
   """
   result = query(sql_query)
   return result

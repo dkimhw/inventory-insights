@@ -74,7 +74,6 @@ def make_avg_make_year_chart (start_date, end_date):
       Returns: Plotly graph object
   """
   avg_year = d.avg_vehicle_year(start_date, end_date)
-  print("avg_year", avg_year)
   return dcc.Graph(
     figure = {
       'data': [
@@ -269,6 +268,66 @@ def make_transmission_bar_chart (start_date, end_date):
         title="Count of Used Cars by Transmission",
         labels={ # replaces default labels by column name
             "count_of_vehicles": "Count of Vehicles", "transmission": "Transmission Type"
+        }
+    )
+  )
+
+##################################################
+# Drivetrain Type Count Bar Chart
+##################################################
+
+@app.callback(
+  Output(component_id = 'drivetrain_bar_chart', component_property = 'children'),
+  Input('date-picker', 'start_date'),
+  Input('date-picker', 'end_date')
+)
+def make_drivetrain_bar_chart (start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  data = d.drivetrain_type_count(start_date, end_date)
+  return dcc.Graph(
+    figure = px.bar(
+        data,
+        y='count_of_vehicles',
+        x='drivetrain',
+        text_auto='.2s',
+        title="Count of Used Cars by Drivetrain",
+        labels={ # replaces default labels by column name
+            "count_of_vehicles": "Count of Vehicles", "drivetrain": "Drivetrain Type"
+        }
+    )
+  )
+
+##################################################
+# Exterior Color Type Count Bar Chart
+##################################################
+
+@app.callback(
+  Output(component_id = 'exterior_color_bar_chart', component_property = 'children'),
+  Input('date-picker', 'start_date'),
+  Input('date-picker', 'end_date')
+)
+def make_exterior_color_bar_chart (start_date, end_date):
+  """
+      start_date: The start date chosen by the user via dash callback
+      end_dte: The end date chosen by the user via dash callback
+
+      Returns: Plotly graph object
+  """
+  data = d.exterior_color_type_count(start_date, end_date)
+  return dcc.Graph(
+    figure = px.bar(
+        data,
+        y='count_of_vehicles',
+        x='exterior_color',
+        text_auto='.2s',
+        title="Count of Used Cars by Exterior Color",
+        labels={ # replaces default labels by column name
+            "count_of_vehicles": "Count of Vehicles", "exterior_color": "Exterior Color"
         }
     )
   )
@@ -568,8 +627,9 @@ layout = dbc.Container([
   separator.Separator("Additional Vehicle Information"),
   dash.html.Div(id="make_count_bar_chart", children = []),
   dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
-  dash.html.Div(id="avg_price_by_make_bar_chart", children = []),
   dash.html.Div(id="transmission_bar_chart", children = []),
+  dash.html.Div(id="drivetrain_bar_chart", children = []),
+  dash.html.Div(id="exterior_color_bar_chart", children = []),
 
   # Make overview data table
   separator.Separator("Detailed Vehicle Make Overview"),
