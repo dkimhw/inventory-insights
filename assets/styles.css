@@ -85,7 +85,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-left: 4.5rem;
   transition: all .1s ease-in-out;
   /* margin-bottom: 1rem; */
 }
@@ -131,10 +130,6 @@ body {
   padding: .75rem 0;
   align-items: center;
   justify-content: flex-start;
-}
-
-.collapsed-content {
-  margin-left: 4.5rem;
 }
 
 /* Navbar */

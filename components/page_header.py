@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 
 
 # Define the navbar structure
-def TitleSection(title):
+def PageHeader(title):
   layout = dash.html.Div([
     dash.html.H1(title, id="title-section")
   ])

@@ -577,6 +577,8 @@ def toggle_collapse(info_collapse, is_open):
 layout = dash.html.Div([
   # Header section
   dash.html.Div([
+    dbc.Container([
+
     dash.html.Div([
       dash.html.H1("Summary", className="dashboard-title"),
       dbc.Button(
@@ -600,6 +602,8 @@ layout = dash.html.Div([
     dash.html.Div([
       hide_info,
     ], className = "collapsed-content "),
+    ])
+
   ], id="dashboard-title-section"),
 
   # Main section

@@ -6,11 +6,8 @@ from pages import home, make_detail
 
 # Connect the navbar to the index
 from components import navbar
-from components import title_section
 from app import app
 
-
-# components
 nav = navbar.Navbar()
 
 app.layout = html.Div([
