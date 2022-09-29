@@ -9,7 +9,7 @@ from datetime import date
 import dash_bootstrap_components as dbc
 import datetime
 from app import app
-from components import collapse, separator
+from components import collapse, separator, page_header
 
 
 ##################################################
@@ -570,41 +570,37 @@ def toggle_collapse(info_collapse, is_open):
     return not is_open
   return is_open
 
+
+##################################################
+## Pass Info to Header Component
+##################################################
+
+filter_button = dbc.Button(
+  id="filter-collapse",
+  className="fa-solid fa-filter",
+  color="primary",
+  n_clicks=0,
+)
+info_button = dbc.Button(
+  id="info-collapse",
+  className="fa-solid fa-info",
+  color="primary",
+  n_clicks=0,
+)
+header_props = {
+  'title': 'Summary',
+  'buttons': [filter_button, info_button],
+  'collapsed_divs': [hide_filter, hide_info]
+}
+header = page_header.PageHeader(header_props)
+
 ##################################################
 ## Main Layout
 ##################################################
 
 layout = dash.html.Div([
   # Header section
-  dash.html.Div([
-    dbc.Container([
-
-    dash.html.Div([
-      dash.html.H1("Summary", className="dashboard-title"),
-      dbc.Button(
-        id="filter-collapse",
-        className="fa-solid fa-filter",
-        color="primary",
-        n_clicks=0,
-      ),
-      dbc.Button(
-        id="info-collapse",
-        className="fa-solid fa-info",
-        color="primary",
-        n_clicks=0,
-      ),
-    ], className="icon-container"),
-
-    # Collapsed Section
-    dash.html.Div([
-      hide_filter,
-    ], className = "collapsed-content "),
-    dash.html.Div([
-      hide_info,
-    ], className = "collapsed-content "),
-    ])
-
-  ], id="dashboard-title-section"),
+  header,
 
   # Main section
   dbc.Container([

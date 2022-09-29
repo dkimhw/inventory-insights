@@ -1,7 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash
 
-
 def Collapse(collapse_id, content = ''):
   layout = dbc.Row(
         dbc.Collapse(

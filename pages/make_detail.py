@@ -1,13 +1,15 @@
 
 # Import necessary libraries
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly.express as px
 from app import app
 import datetime
 import services.dash_app_data as d
 from dash import dcc
+from components import collapse, separator, page_header
+
 
 ##################################################
 # Starting Variables
@@ -156,41 +158,110 @@ def update_avg_vehicle_year_by_make_line_chart(start_date, end_date, value):
 
   return fig
 
+##################################################
+## Collapse Filter
+##################################################
+
+filter_content = dash.html.Div([
+    dash.html.Div([
+      dash.html.Label("Inventory Date Range"),
+      dash.dcc.DatePickerRange(
+        id='date-picker-range',
+        min_date_allowed=datetime.date(2022, 1, 1),
+        initial_visible_month=start_date,
+        start_date=start_date,
+        end_date=end_date,
+        className="filter-input"
+      )
+    ], className="filter-group"),
+    dash.html.Div([
+      dash.html.Label("Vehicle Make"),
+      dash.dcc.Dropdown(
+        id="make-dropdown",
+        options=d.get_vehicle_makes(),
+        multi=True,
+        className="filter-input",
+        style={"width": "100%"},
+        value=first_selected
+      )
+    ], className="filter-group"),
+  ], className="filter-section")
+
+hide_filter = collapse.Collapse('hide_filter_make_detail', filter_content)
+@app.callback(
+  Output("hide_filter_make_detail", "is_open"),
+  [Input("filter-collapse", "n_clicks")],
+  [State("hide_filter_make_detail", "is_open")],
+)
+def toggle_collapse(filter_collapse, is_open):
+  if filter_collapse:
+    return not is_open
+  return is_open
+
+
+##################################################
+## Collapse Info
+##################################################
+
+info = dbc.Row(
+  dbc.Card(
+    """
+      Data has been aggregated from scraping 15 different dealership sites.
+
+      Note that in May no data was scraped.
+    """
+  )
+)
+
+hide_info = collapse.Collapse('hide_info_vehicle_detail', info)
+@app.callback(
+  Output("hide_info_vehicle_detail", "is_open"),
+  [Input("info-collapse", "n_clicks")],
+  [State("hide_info_vehicle_detail", "is_open")],
+)
+def toggle_collapse(info_collapse, is_open):
+  if info_collapse:
+    return not is_open
+  return is_open
+
+
+##################################################
+## Pass Info to Header Component
+##################################################
+
+filter_button = dbc.Button(
+  id="filter-collapse",
+  className="fa-solid fa-filter",
+  color="primary",
+  n_clicks=0,
+)
+info_button = dbc.Button(
+  id="info-collapse",
+  className="fa-solid fa-info",
+  color="primary",
+  n_clicks=0,
+)
+header_props = {
+  'title': 'Vehicle Make Details',
+  'buttons': [filter_button, info_button],
+  'collapsed_divs': [hide_filter, hide_info]
+}
+header = page_header.PageHeader(header_props)
+
+
+##################################################
+## Main Layout
+##################################################
 
 # Define the page layout
-layout = dbc.Container([
-    # Title section
-    dash.html.Div([
-        dash.html.H1("Vehicle Make Detailed Overview", className="dashboard-title")
-    ], className="dashboard-title-section"),
+layout = dash.html.Div([
+  # Header section
+  header,
 
-    # Filter section
-    dash.html.Div([
-      dash.html.Div([
-        dash.html.Label("Inventory Date Range"),
-        dash.dcc.DatePickerRange(
-            id='date-picker-range',
-            min_date_allowed=datetime.date(2022, 1, 1),
-            initial_visible_month=start_date,
-            start_date=start_date,
-            end_date=end_date,
-            className="filter-input"
-        )
-      ], className="filter-group"),
-      dash.html.Div([
-        dash.html.Label("Vehicle Make"),
-        dash.dcc.Dropdown(
-          id="make-dropdown",
-          options=d.get_vehicle_makes(),
-          multi=True,
-          className="filter-input",
-          style={"width": "100%"},
-          value=first_selected
-        )
-      ], className="filter-group"),
-    ], className="filter-section"),
-
+  # Main Dashboard Section
+  dbc.Container([
     avg_price_by_make_line_chart,
     avg_mileage_by_make_line_chart,
     avg_vehicle_year_by_make_line_chart
+  ])
 ])
