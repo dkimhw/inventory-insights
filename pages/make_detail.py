@@ -8,7 +8,7 @@ from app import app
 import datetime
 import services.dash_app_data as d
 from dash import dcc
-from components import collapse, separator, page_header
+from components import collapse, separator, page_header, info_card
 
 
 ##################################################
@@ -203,14 +203,12 @@ def toggle_collapse(filter_collapse, is_open):
 ## Collapse Info
 ##################################################
 
-info = dbc.Row(
-  dbc.Card(
-    """
-      Data has been aggregated from scraping 15 different dealership sites.
+info = info_card.InfoCard(
+  """
+    Data has been aggregated from scraping 15 different dealership sites.
 
-      Note that in May no data was scraped.
-    """
-  )
+    Note that in May no data was scraped.
+  """
 )
 
 hide_info = collapse.Collapse('hide_info_vehicle_detail', info)

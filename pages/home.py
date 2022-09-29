@@ -9,8 +9,7 @@ from datetime import date
 import dash_bootstrap_components as dbc
 import datetime
 from app import app
-from components import collapse, separator, page_header
-
+from components import collapse, separator, page_header, info_card
 
 ##################################################
 # Starting Variables
@@ -549,14 +548,12 @@ def toggle_collapse(filter_collapse, is_open):
 ## Collapse Info
 ##################################################
 
-info = dbc.Row(
-  dbc.Card(
-    """
-      Data has been aggregated from scraping 15 different dealership sites.
+info = info_card.InfoCard(
+  """
+    Data has been aggregated from scraping 15 different dealership sites.
 
-      Note that in May no data was scraped.
-    """
-  )
+    Note that in May no data was scraped.
+  """
 )
 
 hide_info = collapse.Collapse('hide_info', info)
