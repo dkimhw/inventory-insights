@@ -9,8 +9,7 @@ from datetime import date
 import dash_bootstrap_components as dbc
 import datetime
 from app import app
-from components import collapse, separator
-
+from components import collapse, separator, page_header, info_card
 
 ##################################################
 # Starting Variables
@@ -549,14 +548,12 @@ def toggle_collapse(filter_collapse, is_open):
 ## Collapse Info
 ##################################################
 
-info = dbc.Row(
-  dbc.Card(
-    """
-      Data has been aggregated from scraping 15 different dealership sites.
+info = info_card.InfoCard(
+  """
+    Data has been aggregated from scraping 15 different dealership sites.
 
-      Note that in May no data was scraped.
-    """
-  )
+    Note that in May no data was scraped.
+  """
 )
 
 hide_info = collapse.Collapse('hide_info', info)
@@ -570,69 +567,68 @@ def toggle_collapse(info_collapse, is_open):
     return not is_open
   return is_open
 
+
+##################################################
+## Pass Info to Header Component
+##################################################
+
+filter_button = dbc.Button(
+  id="filter-collapse",
+  className="fa-solid fa-filter",
+  color="primary",
+  n_clicks=0,
+)
+info_button = dbc.Button(
+  id="info-collapse",
+  className="fa-solid fa-info",
+  color="primary",
+  n_clicks=0,
+)
+header_props = {
+  'title': 'Summary',
+  'buttons': [filter_button, info_button],
+  'collapsed_divs': [hide_filter, hide_info]
+}
+header = page_header.PageHeader(header_props)
+
 ##################################################
 ## Main Layout
 ##################################################
 
-layout = dbc.Container([
+layout = dash.html.Div([
   # Header section
-  dash.html.Div([
-      dash.html.H1("Summary", className="dashboard-title")
-  ], className="dashboard-title-section"),
+  header,
 
-  # Icon Buttons Section
-  dash.html.Div([
-    dbc.Button(
-      id="filter-collapse",
-      className="fa-solid fa-filter",
-      color="primary",
-      n_clicks=0,
-    ),
-    dbc.Button(
-      id="info-collapse",
-      className="fa-solid fa-info",
-      color="primary",
-      n_clicks=0,
-    ),
+  # Main section
+  dbc.Container([
+    # Dashboard Body
+    # At a Glance Section
+    separator.Separator("At a Glance"),
+    dash.html.Div(id="indicators", children = [
+      dash.html.Div(id="avg_inventory_price", children = [], className="indicator-chart"),
+      dash.html.Div(id="avg_inventory_make_year", children = [], className="indicator-chart"),
+      dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
+    ], className="indicator-chart-section"),
+    dash.html.Div(id="avg_price_line_chart", children = []),
+    dash.html.Div(id="avg_mileage_line_chart", children = []),
+    dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
 
-  ], className="icon-container"),
+    # Create a distribution section for year, price, and mileage
+    separator.Separator("Distribution of Vehicle Year, Price, and Mileage"),
+    dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
+    dash.html.Div(id="mileage_distribution_chart", children = []),
+    dash.html.Div(id="price_distribution_chart", children = []),
 
-  # Collapsed Section
-  dash.html.Div([
-    hide_filter,
-  ], className = 'collapsed-content'),
-  dash.html.Div([
-    hide_info,
-  ], className = 'collapsed-content'),
+    # Additional Vehicle Information Section
+    separator.Separator("Additional Vehicle Information"),
+    dash.html.Div(id="make_count_bar_chart", children = []),
+    dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
+    dash.html.Div(id="transmission_bar_chart", children = []),
+    dash.html.Div(id="drivetrain_bar_chart", children = []),
+    dash.html.Div(id="exterior_color_bar_chart", children = []),
 
-  # Dashboard Body
-  # At a Glance Section
-  separator.Separator("At a Glance"),
-  dash.html.Div(id="indicators", children = [
-    dash.html.Div(id="avg_inventory_price", children = [], className="indicator-chart"),
-    dash.html.Div(id="avg_inventory_make_year", children = [], className="indicator-chart"),
-    dash.html.Div(id="avg_inventory_mileage", children = [], className="indicator-chart")
-  ], className="indicator-chart-section"),
-  dash.html.Div(id="avg_price_line_chart", children = []),
-  dash.html.Div(id="avg_mileage_line_chart", children = []),
-  dash.html.Div(id="avg_dealership_inventory_size_by_month_line_chart", children = []),
-
-  # Create a distribution section for year, price, and mileage
-  separator.Separator("Distribution of Vehicle Year, Price, and Mileage"),
-  dash.html.Div(id="count_of_vehicles_by_vehicle_year", children = []),
-  dash.html.Div(id="mileage_distribution_chart", children = []),
-  dash.html.Div(id="price_distribution_chart", children = []),
-
-  # Additional Vehicle Information Section
-  separator.Separator("Additional Vehicle Information"),
-  dash.html.Div(id="make_count_bar_chart", children = []),
-  dash.html.Div(id="count_of_vehicles_by_makes_and_month", children = []),
-  dash.html.Div(id="transmission_bar_chart", children = []),
-  dash.html.Div(id="drivetrain_bar_chart", children = []),
-  dash.html.Div(id="exterior_color_bar_chart", children = []),
-
-  # Make overview data table
-  separator.Separator("Detailed Vehicle Make Overview"),
-  dash.html.Div(id="make_data_table", children = [])
-
+    # Make overview data table
+    separator.Separator("Detailed Vehicle Make Overview"),
+    dash.html.Div(id="make_data_table", children = [], className="mt-4 mb-4")
+  ])
 ])

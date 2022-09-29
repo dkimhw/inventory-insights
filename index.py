@@ -8,23 +8,25 @@ from pages import home, make_detail
 from components import navbar
 from app import app
 
-# components
 nav = navbar.Navbar()
 
 app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    nav,
-    html.Div(id='page-content', children=[]),
+  dcc.Location(id='url', refresh=False),
+  nav,
+  html.Div(id='title-section', children=[]),
+  html.Div(id='page-content', children=[]),
 ])
 app.css.config.serve_locally = True
 
-@app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
+@app.callback(
+  Output('page-content', 'children'),
+  [Input('url', 'pathname')]
+)
 def display_page(pathname):
-    if pathname == '/':
-        return home.layout
-    if pathname == '/make-detail':
-        return make_detail.layout
+  if pathname == '/':
+      return home.layout
+  if pathname == '/make-detail':
+      return make_detail.layout
 
 if __name__ == '__main__':
     app.run_server(debug=True)

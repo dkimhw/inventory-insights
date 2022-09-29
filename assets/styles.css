@@ -10,27 +10,65 @@ body {
   margin: 0 auto 4rem auto;
 }
 
+
+/* Header Component Styles */
+
 .dashboard-title {
   padding: 0;
-  font-size: 2rem;
+  margin: 0;
+  font-size: 1.75rem;
   letter-spacing: 1.25px;
 }
 
-.dashboard-title-section {
+#dashboard-title-section {
+  width: 100%;
+  font-size: 1.25rem;
+  margin-top: 1.25rem;
+  position: sticky;
+  padding: .75rem 1rem;
+  z-index: 100;
+  top: 0;
+}
+
+.floating-nav {
+  width: calc(100vh - 100px);
+  border-radius: 2px;
+  padding: 1rem;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0px 1px 8px #999;
+}
+
+.icon-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  /* border-bottom: 1.25px #636efa solid; */
-  font-size: 1.25rem;
-  margin-top: 1.5rem;
+  justify-content: flex-start;
+  transition: all .1s ease-in-out;
+  /* margin-bottom: 1rem; */
 }
+
+.icon-container > * {
+  margin-right: .5rem;
+}
+
+.add-padding-top {
+  padding-top: 1rem;
+}
+
 
 /* Filter Section */
 
 .filter-section {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  margin-top: 1.5rem;
+  gap: .5rem;
+}
+
+@media screen and (max-width: 1350px) {
+  .filter-section {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+  }
 }
 
 .filter-group {
@@ -47,23 +85,6 @@ body {
   /* border: 1px solid #636efa; */
 }
 
-/* Icons */
-
-.icon-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
-}
-
-.icon-container > * {
-  margin-right: .5rem;
-}
-
-.collapsed-content {
-  margin-bottom: 1rem;
-}
-
 /* Separator Styles */
 
 .separator {
@@ -73,6 +94,19 @@ body {
   font-size: 1.5rem;
   padding: .75rem 0;
   margin: 1rem 0;
+}
+
+/* Component: Info Card */
+
+.info-card {
+  width: 75%;
+  height: auto;
+  margin-right: auto;
+  border-radius: .5rem;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 0px 1px 5px #999;
+  margin-bottom: .5rem;
 }
 
 /* Indicator Charts */
@@ -92,17 +126,6 @@ body {
   border-radius: 5px;
   flex: 0 0 calc(33.333% - 2rem);
 }
-
-
-/* Dashboard Filters */
-
-.dashboard-filter-section {
-  display: flex;
-  padding: .75rem 0;
-  align-items: center;
-  justify-content: flex-start;
-}
-
 
 /* Navbar */
 
@@ -125,5 +148,6 @@ body {
   /* padding-bottom: .25rem; */
   border-bottom: 1px solid #fff;
 }
+
 
 /* Utilities */
