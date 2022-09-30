@@ -2,7 +2,7 @@
 import dash
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-import services.dash_app_data as d
+import services.summary_data as d
 import plotly.express as px
 from dash import dcc, Input, Output
 from datetime import date
