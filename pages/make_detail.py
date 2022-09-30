@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 from app import app
 import datetime
-import services.dash_app_data as d
+import services.make_detail_data as d
 from dash import dcc
 from components import collapse, separator, page_header, info_card
 
@@ -258,8 +258,12 @@ layout = dash.html.Div([
 
   # Main Dashboard Section
   dbc.Container([
+    separator.Separator("At a Glance"),
     avg_price_by_make_line_chart,
     avg_mileage_by_make_line_chart,
-    avg_vehicle_year_by_make_line_chart
+    avg_vehicle_year_by_make_line_chart,
+
+    separator.Separator("Detailed Make Model Trim Breakdown"),
   ])
+
 ])
